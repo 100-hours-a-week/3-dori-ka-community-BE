@@ -1,6 +1,6 @@
 package com.example.community.service.post;
 
-import com.example.community.common.AuthValidator;
+import com.example.community.common.util.AuthValidator;
 import com.example.community.common.exception.custom.ResourceNotFoundException;
 import com.example.community.common.exception.custom.UnauthorizedException;
 import com.example.community.domain.Post;
@@ -32,8 +32,8 @@ public class PostServiceImpl implements PostService{
     private final PostViewService postViewService;
 
     @Override
-    public PostCreateResponse createPost(PostRequestDto dto, String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UnauthorizedException(UNAUTHORIZED));
+    public PostCreateResponse createPost(PostRequestDto dto, User user) {
+
         Post post = PostRequestDto.ofEntity(dto);
 
         post.setMappingUser(user);
@@ -53,10 +53,7 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public PostDetailResponse update(PostRequestDto dto, Long id, String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UnauthorizedException(UNAUTHORIZED)
-        );
+    public PostDetailResponse update(PostRequestDto dto, Long id, User user) {
 
         Post post = postRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException(RESOURCE_NOT_FOUND)
@@ -76,11 +73,7 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public Page<PostListResponse> getAllPostByUser(String email, Pageable pageable) {
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UnauthorizedException(UNAUTHORIZED)
-        );
-
+    public Page<PostListResponse> getAllPostByUser(User user, Pageable pageable) {
         Page<Post> posts = postRepository.findAllByUser(user, pageable);
 
         return posts.map(PostListResponse::fromEntity);

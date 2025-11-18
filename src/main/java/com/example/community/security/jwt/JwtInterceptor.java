@@ -1,4 +1,4 @@
-package com.example.community.common.jwt;
+package com.example.community.security.jwt;
 
 import com.example.community.common.exception.custom.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;

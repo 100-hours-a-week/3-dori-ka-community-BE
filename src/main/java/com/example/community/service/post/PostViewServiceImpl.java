@@ -88,6 +88,10 @@ public class PostViewServiceImpl implements PostViewService {
             }
         }
     }
+
+    public void syncViewCountBulk() {
+
+    }
 }
 
 

@@ -1,6 +1,6 @@
 package com.example.community.service.user;
 
-import com.example.community.common.AuthValidator;
+import com.example.community.common.util.AuthValidator;
 import com.example.community.common.exception.custom.*;
 import com.example.community.domain.Comment;
 import com.example.community.domain.Post;
@@ -28,7 +28,7 @@ import static com.example.community.common.exception.ErrorMessage.*;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class UserCommandServiceImpl implements UserCommandService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PostRepository postRepository;
@@ -57,10 +57,7 @@ public class UserCommandServiceImpl implements UserCommandService {
     }
 
     @Override
-    public UserDetailResponse updateUser(UserUpdateDto dto, String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UnauthorizedException(UNAUTHORIZED)
-        );
+    public UserDetailResponse updateUser(UserUpdateDto dto, User user) {
 
         user.update(dto.getNickname(), dto.getProfileImage());
 
@@ -68,10 +65,7 @@ public class UserCommandServiceImpl implements UserCommandService {
     }
 
     @Override
-    public void changePassword(ChangePasswordDto dto, String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UnauthorizedException(UNAUTHORIZED)
-        );
+    public void changePassword(ChangePasswordDto dto, User user) {
 
         authValidator.checkPassword(dto.getPassword(), dto.getPasswordCheck());
         user.changePassword(passwordEncoder.encode(dto.getPassword()));
@@ -83,10 +77,7 @@ public class UserCommandServiceImpl implements UserCommandService {
     }
 
     @Override
-    public void delete(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UnauthorizedException(UNAUTHORIZED)
-        );
+    public void delete(User user) {
         List<Post> posts = postRepository.findAllByUser(user);
         posts.forEach(post -> post.setMappingUser(null));
 
@@ -98,5 +89,26 @@ public class UserCommandServiceImpl implements UserCommandService {
         );
         refreshTokenRepository.delete(refreshToken);
         userRepository.delete(user);
+    }
+
+    @Override
+    public UserDetailResponse getUserInfoById(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(RESOURCE_NOT_FOUND));
+        return UserDetailResponse.fromEntity(user);
+    }
+
+    @Override
+    public UserDetailResponse getUserInfo(User user) {
+        return UserDetailResponse.fromEntity(user);
+    }
+
+    @Override
+    public Boolean isEmailDuplicated(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    public Boolean isNicknameDuplicated(String nickname) {
+        return userRepository.existsByEmail(nickname);
     }
 }

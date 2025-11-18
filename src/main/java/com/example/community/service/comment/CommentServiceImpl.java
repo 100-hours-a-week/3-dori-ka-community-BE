@@ -1,6 +1,6 @@
 package com.example.community.service.comment;
 
-import com.example.community.common.AuthValidator;
+import com.example.community.common.util.AuthValidator;
 import com.example.community.common.exception.custom.ResourceNotFoundException;
 import com.example.community.common.exception.custom.UnauthorizedException;
 import com.example.community.domain.Comment;
@@ -30,10 +30,7 @@ public class CommentServiceImpl implements CommentService{
     private final AuthValidator authValidator;
 
     @Override
-    public CommentResponse createComment(CommentRequestDto dto, Long postId, String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UnauthorizedException(UNAUTHORIZED)
-        );
+    public CommentResponse createComment(CommentRequestDto dto, Long postId, User user) {
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new ResourceNotFoundException(RESOURCE_NOT_FOUND)
         );
@@ -55,10 +52,7 @@ public class CommentServiceImpl implements CommentService{
     }
 
     @Override
-    public Page<CommentResponse> getCommentByUser(String email, Pageable pageable) {
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UnauthorizedException(UNAUTHORIZED)
-        );
+    public Page<CommentResponse> getCommentByUser(User user, Pageable pageable) {
 
         Page<Comment> comments = commentRepository.findAllByUser(user, pageable);
         return comments.map(CommentResponse::fromEntity);
@@ -74,10 +68,7 @@ public class CommentServiceImpl implements CommentService{
     }
 
     @Override
-    public CommentResponse update(CommentRequestDto dto, Long id, String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UnauthorizedException(UNAUTHORIZED)
-        );
+    public CommentResponse update(CommentRequestDto dto, Long id, User user) {
 
         Comment comment = commentRepository.findByIdWithUser(id).orElseThrow(
                 () -> new ResourceNotFoundException(RESOURCE_NOT_FOUND)

@@ -1,7 +1,8 @@
 package com.example.community.controller;
 
-import com.example.community.common.annotation.AuthUser;
+import com.example.community.common.annotation.LoginUser;
 import com.example.community.common.response.APIResponse;
+import com.example.community.domain.User;
 import com.example.community.dto.request.comment.CommentRequestDto;
 import com.example.community.dto.response.comment.CommentResponse;
 import com.example.community.service.comment.CommentServiceImpl;
@@ -25,9 +26,9 @@ public class CommentController {
     public ResponseEntity<APIResponse<CommentResponse>> createComment(
             @PathVariable Long postId,
             @RequestBody CommentRequestDto dto,
-            @AuthUser String email
-    ) {
-        CommentResponse comment = commentService.createComment(dto, postId, email);
+            @LoginUser User user
+            ) {
+        CommentResponse comment = commentService.createComment(dto, postId, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(APIResponse.success("댓글 작성 성공", comment));
     }
 
@@ -46,9 +47,9 @@ public class CommentController {
             @PathVariable Long postId,
             @PathVariable Long id,
             @RequestBody CommentRequestDto dto,
-            @AuthUser String email
+            @LoginUser User user
     ) {
-        CommentResponse comment = commentService.update(dto, id, email);
+        CommentResponse comment = commentService.update(dto, id, user);
 
         return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("댓글 수정 성공", comment));
     }

@@ -1,7 +1,7 @@
 package com.example.community.controller;
 
 import com.example.community.common.exception.custom.UnauthorizedException;
-import com.example.community.common.jwt.JwtUtil;
+import com.example.community.security.jwt.JwtUtil;
 import com.example.community.common.response.APIResponse;
 import com.example.community.dto.request.user.UserLoginDto;
 import com.example.community.dto.response.user.LoginResponse;

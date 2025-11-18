@@ -1,7 +1,8 @@
 package com.example.community.controller;
 
-import com.example.community.common.annotation.AuthUser;
+import com.example.community.common.annotation.LoginUser;
 import com.example.community.common.response.APIResponse;
+import com.example.community.domain.User;
 import com.example.community.dto.request.post.PostRequestDto;
 import com.example.community.dto.response.post.PostCreateResponse;
 import com.example.community.dto.response.post.PostDetailResponse;
@@ -43,14 +44,14 @@ public class PostController {
 
 
     @PatchMapping("/{id}")
-    public ResponseEntity<APIResponse<PostDetailResponse>> updatePost(@PathVariable Long id, @RequestBody PostRequestDto dto, @AuthUser String email) {
-        PostDetailResponse post = postService.update(dto, id, email);
+    public ResponseEntity<APIResponse<PostDetailResponse>> updatePost(@PathVariable Long id, @RequestBody PostRequestDto dto, @LoginUser User user) {
+        PostDetailResponse post = postService.update(dto, id, user);
         return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("게시글 수정 성공", post));
     }
 
     @PostMapping
-    public ResponseEntity<APIResponse<PostCreateResponse>> createPost(@Valid @RequestBody PostRequestDto dto, @AuthUser String email) {
-        PostCreateResponse post = postService.createPost(dto, email);
+    public ResponseEntity<APIResponse<PostCreateResponse>> createPost(@Valid @RequestBody PostRequestDto dto, @LoginUser User user) {
+        PostCreateResponse post = postService.createPost(dto, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(APIResponse.success("게시글 작성 성공", post));
     }
 

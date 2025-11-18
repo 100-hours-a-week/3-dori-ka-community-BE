@@ -16,7 +16,7 @@ public class PostJdbcRepository {
         jdbcTemplate.batchUpdate(
                 "UPDATE post SET view_count = ? WHERE post_id = ?",
                 viewcounts.entrySet(),
-                10000,
+                100,
                 (ps, entry) -> {
                     ps.setLong(1, entry.getValue());
                     ps.setLong(2, entry.getKey());

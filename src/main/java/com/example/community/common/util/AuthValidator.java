@@ -1,4 +1,4 @@
-package com.example.community.common;
+package com.example.community.common.util;
 
 import com.example.community.common.exception.custom.BadRequestException;
 import com.example.community.common.exception.custom.DuplicatedException;

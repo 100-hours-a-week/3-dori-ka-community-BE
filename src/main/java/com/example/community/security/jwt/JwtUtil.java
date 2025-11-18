@@ -1,4 +1,4 @@
-package com.example.community.common.jwt;
+package com.example.community.security.jwt;
 
 import com.example.community.domain.User;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -33,7 +33,7 @@ public class JwtUtil {
     ) {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.expiration = expiration * 1000;
-        this.refreshExpiration = refreshExpiration;
+        this.refreshExpiration = refreshExpiration * 1000;
         this.prefix = prefix;
         this.header = header;
     }
