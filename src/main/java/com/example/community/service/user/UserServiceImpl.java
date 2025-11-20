@@ -16,9 +16,13 @@ import com.example.community.repository.post.PostRepository;
 import com.example.community.repository.token.RefreshTokenRepository;
 import com.example.community.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
 import java.util.List;
 
@@ -26,6 +30,7 @@ import static com.example.community.common.exception.ErrorMessage.*;
 
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
@@ -34,8 +39,14 @@ public class UserServiceImpl implements UserService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+
     private final PasswordEncoder passwordEncoder;
     private final AuthValidator authValidator;
+
+    private final S3Client s3Client;
+
+    @Value("${aws.s3.bucket}")
+    private String bucket;
 
     @Override
     public SignUpResponse signUp(UserSignUpDto dto) {
@@ -59,16 +70,30 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailResponse updateUser(UserUpdateDto dto, User user) {
 
-        user.update(dto.getNickname(), dto.getProfileImage());
+        User findUser = userRepository.findByEmail(user.getEmail()).orElseThrow(
+                () -> new ResourceNotFoundException(RESOURCE_NOT_FOUND)
+        );
 
-        return UserDetailResponse.fromEntity(user);
+        String oldProfileImage = findUser.getProfileImage();
+
+        if (oldProfileImage != null && !oldProfileImage.equals(dto.getProfileImage())) {
+            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(oldProfileImage).build());
+        }
+
+        findUser.update(dto.getNickname(), dto.getProfileImage());
+
+
+
+        return UserDetailResponse.fromEntity(findUser);
     }
 
     @Override
     public void changePassword(ChangePasswordDto dto, User user) {
-
+        User findUser = userRepository.findByEmail(user.getEmail()).orElseThrow(
+                () -> new ResourceNotFoundException(RESOURCE_NOT_FOUND)
+        );
         authValidator.checkPassword(dto.getPassword(), dto.getPasswordCheck());
-        user.changePassword(passwordEncoder.encode(dto.getPassword()));
+        findUser.changePassword(passwordEncoder.encode(dto.getPassword()));
     }
 
     @Override

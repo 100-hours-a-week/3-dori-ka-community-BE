@@ -37,6 +37,7 @@ public class AuthController {
         cookie.setPath("/");
         cookie.setMaxAge(7 * 24 * 60 * 60);
 
+
         response.addCookie(cookie);
 
         return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("로그인 성공", loginUser));

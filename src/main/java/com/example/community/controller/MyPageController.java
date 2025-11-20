@@ -8,6 +8,7 @@ import com.example.community.dto.request.user.UserUpdateDto;
 import com.example.community.dto.response.comment.CommentResponse;
 import com.example.community.dto.response.post.PostListResponse;
 import com.example.community.dto.response.user.UserDetailResponse;
+import com.example.community.security.CustomUserDetails;
 import com.example.community.service.comment.CommentService;
 import com.example.community.service.post.PostService;
 import com.example.community.service.user.UserService;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -38,21 +40,20 @@ public class MyPageController {
 
     @GetMapping("/posts")
     public ResponseEntity<APIResponse<Page<PostListResponse>>> getPostsByUser(@LoginUser User user,
-                                                                        @PageableDefault(size = 3, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+                                                                              @PageableDefault(size = 3, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<PostListResponse> posts = postService.getAllPostByUser(user, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("사용자 게시글 조회 성공", posts));
     }
 
     @GetMapping("/comments")
     public ResponseEntity<APIResponse<Page<CommentResponse>>> getCommentsByUser(@LoginUser User user,
-                                                                          @PageableDefault(size = 3, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+                                                                                @PageableDefault(size = 3, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<CommentResponse> comments = commentService.getCommentByUser(user, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("사용자 댓글 조회 성공", comments));
     }
 
     @PatchMapping
-    public ResponseEntity<APIResponse<UserDetailResponse>> userUpdate(@RequestBody UserUpdateDto dto,
-                                                                      @LoginUser User user) {
+    public ResponseEntity<APIResponse<UserDetailResponse>> userUpdate(@RequestBody UserUpdateDto dto, @LoginUser User user) {
 
         UserDetailResponse userResponse = userService.updateUser(dto, user);
 
@@ -60,8 +61,7 @@ public class MyPageController {
     }
 
     @PatchMapping("/pwd")
-    public ResponseEntity<APIResponse<Void>> changePassword(@Valid @RequestBody ChangePasswordDto dto,
-                                                            @LoginUser User user) {
+    public ResponseEntity<APIResponse<Void>> changePassword(@Valid @RequestBody ChangePasswordDto dto, @LoginUser User user) {
         userService.changePassword(dto, user);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

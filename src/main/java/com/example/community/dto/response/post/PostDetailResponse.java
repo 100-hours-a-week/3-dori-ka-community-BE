@@ -15,18 +15,20 @@ public class PostDetailResponse {
     private String content;
     private String writer;
     private String writerEmail;
+    private String profileImage;
     private Long viewCount;
     private String createdDate;
     private String modifiedDate;
 
 
     @Builder
-    public PostDetailResponse(Long postId, String title, String content, String writer, String writerEmail, Long viewCount, String createdDate, String modifiedDate) {
+    public PostDetailResponse(Long postId, String title, String content, String writer, String writerEmail, String profileImage, Long viewCount, String createdDate, String modifiedDate) {
         this.postId = postId;
         this.title = title;
         this.content = content;
         this.writer = writer;
         this.writerEmail = writerEmail;
+        this.profileImage = profileImage;
         this.viewCount = viewCount;
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
@@ -40,6 +42,7 @@ public class PostDetailResponse {
                 .content(post.getContent())
                 .writer(post.getUser().getNickname())
                 .writerEmail(post.getUser().getEmail())
+                .profileImage(post.getUser().getProfileImage())
                 .viewCount(post.getViewCount())
                 .createdDate(DateTimeUtils.format(post.getCreatedDate()))
                 .modifiedDate(DateTimeUtils.format(post.getModifiedDate()))

@@ -17,7 +17,13 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json; ");
-        response.getWriter().write("" +
-                "");
+        response.getWriter().write(
+                """
+                {
+                  "success": false,
+                  "message": "인증이 필요합니다. 유효한 JWT 토큰을 포함해주세요."
+                }
+                """
+        );
     }
 }

@@ -8,10 +8,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-
-/**
- * 패스워드 삭제할것.. 확인용..
- */
 public class UserDetailResponse {
 
     private String email;

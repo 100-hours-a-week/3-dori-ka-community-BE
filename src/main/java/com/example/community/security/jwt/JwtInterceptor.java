@@ -1,3 +1,4 @@
+/*
 package com.example.community.security.jwt;
 
 import com.example.community.common.exception.custom.UnauthorizedException;
@@ -39,3 +40,4 @@ public class JwtInterceptor implements HandlerInterceptor {
         return true;
     }
 }
+*/

@@ -14,16 +14,18 @@ public class PostListResponse {
     private String title;
     private String content;
     private String writer;
+    private String profileImage;
     private Long viewCount;
     private String createdDate;
 
 
     @Builder
-    public PostListResponse(Long postId, String title, String content, String writer, Long viewCount, String createdDate) {
+    public PostListResponse(Long postId, String title, String content, String writer, String profileImage, Long viewCount, String createdDate) {
         this.postId = postId;
         this.title = title;
         this.content = content;
         this.writer = writer;
+        this.profileImage = profileImage;
         this.viewCount = viewCount;
         this.createdDate = createdDate;
     }
@@ -35,6 +37,7 @@ public class PostListResponse {
                 .title(post.getTitle())
                 .content(post.getContent())
                 .writer(post.getUser().getNickname())
+                .profileImage(post.getUser().getProfileImage())
                 .viewCount(post.getViewCount())
                 .createdDate(DateTimeUtils.format(post.getCreatedDate()))
                 .build();
