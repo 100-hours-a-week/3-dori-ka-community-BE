@@ -27,7 +27,6 @@ import static com.example.community.common.exception.ErrorMessage.*;
 public class PostServiceImpl implements PostService{
 
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
     private final AuthValidator authValidator;
     private final PostViewService postViewService;
 

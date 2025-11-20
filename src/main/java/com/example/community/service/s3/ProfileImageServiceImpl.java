@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class S3PresignedServiceImpl implements S3PresignedService {
+public class ProfileImageServiceImpl implements ProfileImageService {
 
     private final S3Presigner s3Presigner;
 
@@ -25,8 +25,8 @@ public class S3PresignedServiceImpl implements S3PresignedService {
     @Value("${aws.region}")
     private String region;
 
-    public PresignedUrlResponse createdPresignedUrl(String contentType) {
-        String key = "profile/" + "temp" + "/" + UUID.randomUUID();
+    public PresignedUrlResponse createdPresignedUrl(String prefix, String contentType) {
+        String key = prefix + "/" + UUID.randomUUID();
 
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -44,5 +44,6 @@ public class S3PresignedServiceImpl implements S3PresignedService {
         String profileImageUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
         return PresignedUrlResponse.of(presigned.url().toString(), key, profileImageUrl);
     }
+
 
 }

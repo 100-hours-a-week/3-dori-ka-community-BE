@@ -3,7 +3,7 @@ package com.example.community.controller;
 import com.example.community.common.response.APIResponse;
 import com.example.community.dto.request.image.PresignedUrlRequestDto;
 import com.example.community.dto.response.image.PresignedUrlResponse;
-import com.example.community.service.s3.S3PresignedService;
+import com.example.community.service.s3.ProfileImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/profile/image")
+@RequestMapping("/presigned-url")
 public class ProfileImageController {
 
-    private final S3PresignedService s3PresignedService;
+    private final ProfileImageService profileImageService;
 
-    @PostMapping("/presigned")
+    @PostMapping
     public ResponseEntity<APIResponse<PresignedUrlResponse>> createPresignedUrl(@RequestBody PresignedUrlRequestDto dto) {
-        PresignedUrlResponse response = s3PresignedService.createdPresignedUrl(dto.getContentType());
+        PresignedUrlResponse response = profileImageService.createdPresignedUrl(dto.getPrefix(), dto.getContentType());
         return ResponseEntity.status(HttpStatus.CREATED).body(APIResponse.success("url 생성 성공", response));
     }
 

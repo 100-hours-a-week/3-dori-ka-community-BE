@@ -59,7 +59,7 @@ public class SecurityConfig {
                                 "/users/**",
                                 "/posts",
                                 "/posts/**",
-                                "/profile/image/**"
+                                "/presigned-url"
                         ).permitAll()
 
                         .anyRequest().authenticated()

@@ -7,9 +7,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PresignedUrlRequestDto {
 
+    private String prefix;
     private String contentType;
 
-    public PresignedUrlRequestDto(String contentType) {
+    public PresignedUrlRequestDto(String prefix, String contentType) {
+        this.prefix = prefix;
         this.contentType = contentType;
     }
 }

@@ -103,6 +103,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(User user) {
+
         List<Post> posts = postRepository.findAllByUser(user);
         posts.forEach(post -> post.setMappingUser(null));
 
@@ -113,6 +114,7 @@ public class UserServiceImpl implements UserService {
                 () -> new BadRequestException(TOKEN_EXPIRE)
         );
         refreshTokenRepository.delete(refreshToken);
+        s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(user.getProfileImage()).build());
         userRepository.delete(user);
     }
 
