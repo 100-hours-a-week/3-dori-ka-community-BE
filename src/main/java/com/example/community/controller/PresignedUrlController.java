@@ -2,7 +2,7 @@ package com.example.community.controller;
 
 import com.example.community.common.response.APIResponse;
 import com.example.community.dto.request.image.PresignedUrlRequestDto;
-import com.example.community.dto.response.image.PresignedUrlResponse;
+import com.example.community.dto.response.s3.PresignedUrlResponse;
 import com.example.community.service.s3.ProfileImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,6 +1,6 @@
 package com.example.community.service.s3;
 
-import com.example.community.dto.response.image.PresignedUrlResponse;
+import com.example.community.dto.response.s3.PresignedUrlResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

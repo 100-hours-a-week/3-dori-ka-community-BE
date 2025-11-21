@@ -10,10 +10,12 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
@@ -89,8 +91,32 @@ public class PostViewServiceImpl implements PostViewService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = false)
+    @Scheduled(fixedRate = 60000)
     public void syncViewCountBulk() {
 
+        Cache cache = cacheManager.getCache("viewcount");
+        if (cache == null) return;
+
+        Object nativeCache = cache.getNativeCache();
+        if (nativeCache instanceof ConcurrentMap<?, ?> map) {
+            Map<Long, Long> updateMap = new HashMap<>();
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                Long key = (Long) entry.getKey();
+                Long viewcount = (Long) entry.getValue();
+                updateMap.put(key, viewcount);
+            }
+            if (!updateMap.isEmpty()) {
+                try {
+                    postJdbcRepository.bulkUpdateViewcounts(updateMap);
+
+                    map.clear();
+                } catch (Exception e) {
+                    log.error("조회수 동기화 실패");
+                }
+            }
+        }
     }
 }
 
