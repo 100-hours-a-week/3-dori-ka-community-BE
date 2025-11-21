@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
@@ -62,12 +63,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDetailResponse getUserInfo(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(RESOURCE_NOT_FOUND));
-        return UserDetailResponse.fromEntity(user);
-    }
-
-    @Override
     public UserDetailResponse updateUser(UserUpdateDto dto, User user) {
 
         User findUser = userRepository.findByEmail(user.getEmail()).orElseThrow(
@@ -76,7 +71,7 @@ public class UserServiceImpl implements UserService {
 
         String oldProfileImage = findUser.getProfileImage();
 
-        if (oldProfileImage != null && !oldProfileImage.equals(dto.getProfileImage())) {
+        if (StringUtils.hasText(oldProfileImage) && !oldProfileImage.equals(dto.getProfileImage())) {
             s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(oldProfileImage).build());
         }
 
@@ -136,6 +131,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean isNicknameDuplicated(String nickname) {
-        return userRepository.existsByEmail(nickname);
+        return userRepository.existsByNickname(nickname);
     }
 }

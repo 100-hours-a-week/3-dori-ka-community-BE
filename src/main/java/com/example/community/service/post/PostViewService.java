@@ -7,4 +7,6 @@ public interface PostViewService {
     Long getViewCount(Long postId);
 
     void syncViewCount();
+
+    void syncViewCountBulk();
 }

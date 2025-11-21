@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class ProfileImageServiceImpl implements ProfileImageService {
+public class PreSignedUrlServiceImpl implements PreSignedUrlService {
 
     private final S3Presigner s3Presigner;
 

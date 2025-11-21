@@ -4,8 +4,10 @@ import com.example.community.common.annotation.LoginUser;
 import com.example.community.common.response.APIResponse;
 import com.example.community.domain.User;
 import com.example.community.dto.request.post.PostRequestDto;
+import com.example.community.dto.request.post.PostUpdateDto;
 import com.example.community.dto.response.post.PostCreateResponse;
 import com.example.community.dto.response.post.PostDetailResponse;
+import com.example.community.dto.response.post.PostImageResponse;
 import com.example.community.dto.response.post.PostListResponse;
 import com.example.community.service.post.PostService;
 import com.example.community.service.post.PostViewService;
@@ -19,6 +21,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,7 +48,7 @@ public class PostController {
 
 
     @PatchMapping("/{id}")
-    public ResponseEntity<APIResponse<PostDetailResponse>> updatePost(@PathVariable Long id, @RequestBody PostRequestDto dto, @LoginUser User user) {
+    public ResponseEntity<APIResponse<PostDetailResponse>> updatePost(@PathVariable Long id, @RequestBody PostUpdateDto dto, @LoginUser User user) {
         PostDetailResponse post = postService.update(dto, id, user);
         return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("게시글 수정 성공", post));
     }
@@ -66,7 +70,6 @@ public class PostController {
         Long viewCount = postViewService.getViewCount(id);
         return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("조회수 조회 성공", viewCount));
     }
-
 
     /**
      * 무한 스크롤링 구현을 위해..

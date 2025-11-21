@@ -11,8 +11,6 @@ public interface UserService {
 
     SignUpResponse signUp(UserSignUpDto dto);
 
-    UserDetailResponse getUserInfo(Long id);
-
     UserDetailResponse updateUser(UserUpdateDto dto, User user);
 
     void changePassword(ChangePasswordDto dto, User user);

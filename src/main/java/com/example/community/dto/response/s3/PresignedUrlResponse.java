@@ -1,4 +1,4 @@
-package com.example.community.dto.response.image;
+package com.example.community.dto.response.s3;
 
 import lombok.Getter;
 

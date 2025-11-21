@@ -1,23 +1,32 @@
 package com.example.community.service.post;
 
+import com.example.community.common.exception.custom.ForbiddenException;
+import com.example.community.common.exception.custom.UnauthorizedException;
 import com.example.community.common.util.AuthValidator;
 import com.example.community.common.exception.custom.ResourceNotFoundException;
-import com.example.community.common.exception.custom.UnauthorizedException;
 import com.example.community.domain.Post;
+import com.example.community.domain.PostImage;
 import com.example.community.domain.User;
 import com.example.community.dto.request.post.PostRequestDto;
+import com.example.community.dto.request.post.PostUpdateDto;
 import com.example.community.dto.response.post.PostCreateResponse;
 import com.example.community.dto.response.post.PostDetailResponse;
+import com.example.community.dto.response.post.PostImageResponse;
 import com.example.community.dto.response.post.PostListResponse;
 import com.example.community.repository.post.PostRepository;
-import com.example.community.repository.user.UserRepository;
+import com.example.community.repository.post.PostImageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
+
+import java.util.List;
 
 import static com.example.community.common.exception.ErrorMessage.*;
 
@@ -27,8 +36,17 @@ import static com.example.community.common.exception.ErrorMessage.*;
 public class PostServiceImpl implements PostService{
 
     private final PostRepository postRepository;
-    private final AuthValidator authValidator;
+    private final PostImageRepository postImageRepository;
+
     private final PostViewService postViewService;
+    private final AuthValidator authValidator;
+
+    private final S3Client s3Client;
+
+    @Value("${aws.s3.bucket}")
+    private String bucket;
+
+
 
     @Override
     public PostCreateResponse createPost(PostRequestDto dto, User user) {
@@ -39,7 +57,19 @@ public class PostServiceImpl implements PostService{
 
         Post savedPost = postRepository.save(post);
 
+        if (dto.getPostImageUrls() != null && !dto.getPostImageUrls().isEmpty()) {
+            for (String imageUrl : dto.getPostImageUrls()) {
+                PostImage postImage = PostImage.builder()
+                        .post(savedPost)
+                        .postImageUrl(imageUrl)
+                        .build();
+                postImageRepository.save(postImage);
+                savedPost.addPostImages(postImage);
+            }
+        }
+
         return PostCreateResponse.fromEntity(savedPost);
+
     }
 
     @Override
@@ -52,14 +82,53 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public PostDetailResponse update(PostRequestDto dto, Long id, User user) {
+    public PostDetailResponse update(PostUpdateDto dto, Long id, User user) {
 
         Post post = postRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException(RESOURCE_NOT_FOUND)
         );
+
         authValidator.validate(user, post.getUser());
 
         post.update(dto.getTitle(), dto.getContent());
+
+        if (dto.getDeletedImageIds() != null && !dto.getDeletedImageIds().isEmpty()) {
+
+            for (Long imageId : dto.getDeletedImageIds()) {
+
+                PostImage postImage = postImageRepository.findById(imageId)
+                        .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_NOT_FOUND));
+
+                if (!postImage.getPost().getId().equals(post.getId())) {
+                    throw new ForbiddenException(FORBIDDEN);
+                }
+
+                s3Client.deleteObject(DeleteObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(postImage.getPostImageUrl())
+                        .build());
+
+                postImageRepository.delete(postImage);
+
+                // 엔티티 관계에서도 제거
+                post.getPostImages().remove(postImage);
+            }
+        }
+
+        if (dto.getNewPostImageUrls() != null && !dto.getNewPostImageUrls().isEmpty()) {
+
+            for (String imageUrl : dto.getNewPostImageUrls()) {
+
+                PostImage newImage = PostImage.builder()
+                        .post(post)
+                        .postImageUrl(imageUrl)
+                        .build();
+
+                postImageRepository.save(newImage);
+
+                post.addPostImages(newImage);
+            }
+        }
 
         return PostDetailResponse.fromEntity(post);
     }
@@ -86,7 +155,25 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
+    public List<PostImageResponse> getAllPostImageByPostId(Long id) {
+        List<PostImage> postImages = postImageRepository.findAllByPostId(id);
+
+        return postImages.stream().map(PostImageResponse::fromEntity).toList();
+    }
+
+    @Override
     public void delete(Long id) {
-        postRepository.deleteById(id);
+        Post post = postRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException(RESOURCE_NOT_FOUND)
+        );
+
+        List<PostImage> postImages = postImageRepository.findAllByPostId(post.getId());
+        for (PostImage postImage : postImages) {
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                            .key(postImage.getPostImageUrl()).build());
+        }
+
+        postRepository.delete(post);
     }
 }

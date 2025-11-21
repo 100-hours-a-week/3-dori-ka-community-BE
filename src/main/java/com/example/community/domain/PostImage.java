@@ -1,6 +1,7 @@
 package com.example.community.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +19,7 @@ public class PostImage {
 
     private String postImageUrl;
 
+    @Builder
     public PostImage(Post post, String postImageUrl) {
         this.post = post;
         this.postImageUrl = postImageUrl;

@@ -1,4 +1,4 @@
-package com.example.community.repository.s3;
+package com.example.community.repository.post;
 
 import com.example.community.domain.PostImage;
 import org.springframework.data.jpa.repository.JpaRepository;
