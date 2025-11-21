@@ -48,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
         long refreshExpiration = jwtUtil.getRefreshExpiration();
 
         RefreshToken exist = refreshTokenRepository.findByUser(user).orElse(null);
-        LocalDateTime expirationDate = LocalDateTime.now().plusSeconds(refreshExpiration);
+        LocalDateTime expirationDate = LocalDateTime.now().plusSeconds(refreshExpiration / 1000);
 
         if (exist != null) {
             exist.updateToken(refreshToken, expirationDate);
