@@ -187,3 +187,7 @@ com.example.community
 https://www.notion.so/0-2ab34a3a75ae80bb8c7ecb910793d525?v=2a734a3a75ae8171b217000cc28a7890&source=copy_link
 
 ### 시연 영상
+
+
+https://github.com/user-attachments/assets/b70d0bb3-5118-4907-900d-cbdb7605dbcb
+
