@@ -42,7 +42,6 @@ public class UserSignUpDto {
         this.profileImage = profileImage;
     }
 
-    @Builder
     public static User ofEntity(UserSignUpDto dto) {
         return User.builder()
                 .email(dto.getEmail())

@@ -69,6 +69,10 @@ public class UserServiceImpl implements UserService {
                 () -> new ResourceNotFoundException(RESOURCE_NOT_FOUND)
         );
 
+        if (!dto.getNickname().equals(findUser.getNickname()) &&userRepository.existsByNickname(dto.getNickname())) {
+            throw new DuplicatedException(NICKNAME_DUPLICATED);
+        }
+
         String oldProfileImage = findUser.getProfileImage();
 
         if (StringUtils.hasText(oldProfileImage) && !oldProfileImage.equals(dto.getProfileImage())) {
@@ -76,8 +80,6 @@ public class UserServiceImpl implements UserService {
         }
 
         findUser.update(dto.getNickname(), dto.getProfileImage());
-
-
 
         return UserDetailResponse.fromEntity(findUser);
     }

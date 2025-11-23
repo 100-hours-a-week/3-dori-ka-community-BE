@@ -2,6 +2,7 @@ package com.example.community.dto.request.user;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,6 +16,7 @@ public class UserUpdateDto {
 
     private String profileImage;
 
+    @Builder
     public UserUpdateDto(String nickname, String profileImage) {
         this.nickname = nickname;
         this.profileImage = profileImage;

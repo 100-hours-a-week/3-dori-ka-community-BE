@@ -2,6 +2,7 @@ package com.example.community.dto.request.user;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +17,7 @@ public class ChangePasswordDto {
     private String password;
     private String passwordCheck;
 
+    @Builder
     public ChangePasswordDto(String password, String passwordCheck) {
         this.password = password;
         this.passwordCheck = passwordCheck;
