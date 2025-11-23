@@ -13,6 +13,7 @@
 - Spring Security
 - MySQL
 - AWS S3
+- Swagger UI + Rest Docs
 
 ### Frontend
 - HTML / CSS
@@ -26,14 +27,14 @@
 - JWT Access Token / Refresh Token 발급
 - Spring Security + JWTAuthenticationFilter 적용
 - RefreshToken HTTP ONLY 쿠키 적용
+- Swagger UI + Rest Docs를 사용한 문서화
 
 ### 주요 기능
 - 회원가입
 - 로그인 / 로그아웃
-- 게시글 CRUD
-- 댓글 CRUD
+- 게시글 및 댓글 CRUD
 - Presigned-URL을 통해 Aws S3 파일 업로드
-- 캐싱 기능 + Batch Update를 통한 조회수 Update
+- Spring Cache + JdbcTemplate Batch Update를 통한 조회수 Update 최적화
 ---
 
 ## 📁 프로젝트 구조
@@ -145,14 +146,11 @@ com.example.community
 ### 핵심 기능
 🔐 인증/인가 - JWT 기반
 
-- Access Token + Refresh Token 구조로 인증 처리
+- Access Token + Refresh Token 구조로 검증 및 로그인
 - Access Token 만료 시 Refresh Token으로 재발급
-- Refresh Token은 HttpOnly Cookie 로 발급해 보안 강화
-- Spring Security + JWT AuthenticationFilter 로 인증 흐름 구성
+- Refresh Token은 HttpOnly Cookie를 사용해 보안 강화
 
-
-⸻
-
+---
 🗂️ AWS S3 + Presigned-URL 기반 이미지 업로드
 
 사용 이유
@@ -166,13 +164,13 @@ com.example.community
 - 프론트엔드가 해당 URL로 이미지 업로드
 - 업로드된 S3 객체 키를 사용해 이미지 URL 생성 후 게시글/프로필과 연결
 
-⸻
+---
 
 ⚡ 조회수 캐싱 + 배치 업데이트 (Spring Cache + Scheduled)
 
 사용 이유
-- 게시글이 많아질수록 조회수 UPDATE 쿼리 폭증 문제(=10000번 조회 → 10000 UPDATE) 발생
-- 즉시 업데이트 방식은 성능 저하와 DB 부하를 초래함
+- 게시글 및 사용자가 많아질수록 게시글 조회수 UPDATE 쿼리 폭증 문제(10000번 조회 → 10000번 UPDATE 퀴리) 발생
+
 
 해결 방법
 
