@@ -7,7 +7,6 @@ import com.example.community.dto.request.post.PostRequestDto;
 import com.example.community.dto.request.post.PostUpdateDto;
 import com.example.community.dto.response.post.PostCreateResponse;
 import com.example.community.dto.response.post.PostDetailResponse;
-import com.example.community.dto.response.post.PostImageResponse;
 import com.example.community.dto.response.post.PostListResponse;
 import com.example.community.service.post.PostService;
 import com.example.community.service.post.PostViewService;
@@ -22,7 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
