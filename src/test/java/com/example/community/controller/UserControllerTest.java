@@ -1,8 +1,9 @@
 package com.example.community.controller;
 
+import com.example.community.common.exception.ErrorMessage;
+import com.example.community.common.exception.custom.DuplicatedException;
 import com.example.community.dto.request.user.UserSignUpDto;
 import com.example.community.dto.response.user.SignUpResponse;
-import com.example.community.dto.response.user.UserDetailResponse;
 
 import com.example.community.service.user.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,13 +41,13 @@ class UserControllerTest {
 
     @Test
     @DisplayName("회원가입 성공")
-    void register_success() throws Exception {
+    void signUp_success() throws Exception {
 
         UserSignUpDto dto = UserSignUpDto.builder()
                 .email("test@test.com")
                 .password("Abcd1234!")
                 .passwordCheck("Abcd1234!")
-                .nickname("tester")
+                .nickname("test")
                 .profileImage("profile.png")
                 .build();
 
@@ -61,5 +62,50 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.email").value("test@test.com"));
 
         verify(userService, times(1)).signUp(any(UserSignUpDto.class));
+    }
+
+    @Test
+    @DisplayName("회원가입 실패 - 이메일 중복")
+    void signUp_fail_duplicateEmail() throws Exception {
+
+        UserSignUpDto dto = UserSignUpDto.builder()
+                .email("test@test.com")
+                .password("Abcd1234!")
+                .passwordCheck("Abcd1234!")
+                .nickname("test")
+                .profileImage("profile.png")
+                .build();
+
+        when(userService.signUp(any(UserSignUpDto.class)))
+                .thenThrow(new DuplicatedException(ErrorMessage.EMAIL_DUPLICATED));
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(ErrorMessage.EMAIL_DUPLICATED.getMessage()));
+    }
+
+
+    @Test
+    @DisplayName("회원가입 실패 - 이메일 중복")
+    void signUp_fail_nicknameEmail() throws Exception {
+
+        UserSignUpDto dto = UserSignUpDto.builder()
+                .email("test@test.com")
+                .password("Abcd1234!")
+                .passwordCheck("Abcd1234!")
+                .nickname("test")
+                .profileImage("profile.png")
+                .build();
+
+        when(userService.signUp(any(UserSignUpDto.class)))
+                .thenThrow(new DuplicatedException(ErrorMessage.NICKNAME_DUPLICATED));
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(ErrorMessage.NICKNAME_DUPLICATED.getMessage()));
     }
 }
