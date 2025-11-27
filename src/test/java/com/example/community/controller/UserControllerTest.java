@@ -88,7 +88,7 @@ class UserControllerTest {
 
 
     @Test
-    @DisplayName("회원가입 실패 - 이메일 중복")
+    @DisplayName("회원가입 실패 - 닉네임 중복")
     void signUp_fail_nicknameDuplicate() throws Exception {
 
         UserSignUpDto dto = UserSignUpDto.builder()
@@ -108,4 +108,5 @@ class UserControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value(ErrorMessage.NICKNAME_DUPLICATED.getMessage()));
     }
+
 }
