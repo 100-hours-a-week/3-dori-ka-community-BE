@@ -89,7 +89,7 @@ class UserControllerTest {
 
     @Test
     @DisplayName("회원가입 실패 - 이메일 중복")
-    void signUp_fail_nicknameEmail() throws Exception {
+    void signUp_fail_nicknameDuplicate() throws Exception {
 
         UserSignUpDto dto = UserSignUpDto.builder()
                 .email("test@test.com")
