@@ -1,4 +1,4 @@
-package com.example.community.service.post;
+package com.example.community.service.post.viewcount;
 
 import com.example.community.common.exception.custom.ResourceNotFoundException;
 import com.example.community.domain.Post;

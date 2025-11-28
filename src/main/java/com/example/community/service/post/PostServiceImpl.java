@@ -1,11 +1,11 @@
 package com.example.community.service.post;
 
 import com.example.community.common.exception.custom.ForbiddenException;
-import com.example.community.common.exception.custom.UnauthorizedException;
 import com.example.community.common.util.AuthValidator;
 import com.example.community.common.exception.custom.ResourceNotFoundException;
 import com.example.community.domain.Post;
 import com.example.community.domain.PostImage;
+import com.example.community.domain.PostLike;
 import com.example.community.domain.User;
 import com.example.community.dto.request.post.PostRequestDto;
 import com.example.community.dto.request.post.PostUpdateDto;
@@ -13,8 +13,10 @@ import com.example.community.dto.response.post.PostCreateResponse;
 import com.example.community.dto.response.post.PostDetailResponse;
 import com.example.community.dto.response.post.PostImageResponse;
 import com.example.community.dto.response.post.PostListResponse;
+import com.example.community.repository.post.PostLikeRepository;
 import com.example.community.repository.post.PostRepository;
 import com.example.community.repository.post.PostImageRepository;
+import com.example.community.service.post.viewcount.PostViewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -37,6 +39,7 @@ public class PostServiceImpl implements PostService{
 
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
+    private final PostLikeRepository postLikeRepository;
 
     private final PostViewService postViewService;
     private final AuthValidator authValidator;
@@ -45,7 +48,6 @@ public class PostServiceImpl implements PostService{
 
     @Value("${aws.s3.bucket}")
     private String bucket;
-
 
 
     @Override
@@ -69,7 +71,6 @@ public class PostServiceImpl implements PostService{
         }
 
         return PostCreateResponse.fromEntity(savedPost);
-
     }
 
     @Override
@@ -173,6 +174,8 @@ public class PostServiceImpl implements PostService{
                     .bucket(bucket)
                             .key(postImage.getPostImageUrl()).build());
         }
+
+        postLikeRepository.deleteAllByPostId(post.getId());
 
         postRepository.delete(post);
     }

@@ -1,4 +1,4 @@
-package com.example.community.service.post;
+package com.example.community.service.post.viewcount;
 
 public interface PostViewService {
 

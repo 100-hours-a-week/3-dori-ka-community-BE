@@ -111,7 +111,11 @@ public class UserServiceImpl implements UserService {
                 () -> new BadRequestException(TOKEN_EXPIRE)
         );
         refreshTokenRepository.delete(refreshToken);
-        s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(user.getProfileImage()).build());
+
+        if (StringUtils.hasText(user.getProfileImage())) {
+            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(user.getProfileImage()).build());
+        }
+
         userRepository.delete(user);
     }
 

@@ -18,7 +18,8 @@ public enum ErrorMessage {
 
     EMAIL_DUPLICATED(HttpStatus.CONFLICT, "중복된 이메일입니다."),
     NICKNAME_DUPLICATED(HttpStatus.CONFLICT, "중복된 닉네임입니다."),
-    DUPLICATED_LIKES(HttpStatus.CONFLICT, "이미 좋아요를 눌렀습니다.");
+    DUPLICATED_LIKES(HttpStatus.CONFLICT, "이미 좋아요를 눌렀습니다."),
+    NOT_LIKED_POST(HttpStatus.BAD_REQUEST, "좋아요하지 않은 게시물입니다.");
 
     private final HttpStatus status;
     private final String message;

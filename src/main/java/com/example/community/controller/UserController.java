@@ -44,7 +44,7 @@ public class UserController {
     @GetMapping("/nickname")
     public ResponseEntity<APIResponse<Boolean>> isNicknameDuplicated(@RequestParam String nickname) {
         Boolean nicknameDuplicated = userService.isNicknameDuplicated(nickname);
-        return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("이메일 중복 체크 성공", nicknameDuplicated));
+        return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("닉네임 중복 체크 성공", nicknameDuplicated));
     }
 
     @DeleteMapping("/{id}")
