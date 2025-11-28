@@ -1,0 +1,22 @@
+package com.example.community.repository.post;
+
+import com.example.community.domain.PostLike;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
+    Boolean existsByPostIdAndUserId(Long postId, Long userId);
+
+    Optional<PostLike> findByPostIdAndUserId(Long postId, Long userId);
+
+    long countByPostId(Long postId);
+
+    @Modifying
+    @Query("DELETE FROM PostLike pl WHERE pl.post.id = :postId")
+    void deleteAllByPostId(Long postId);
+
+}

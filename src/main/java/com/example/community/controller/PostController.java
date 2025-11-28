@@ -9,7 +9,7 @@ import com.example.community.dto.response.post.PostCreateResponse;
 import com.example.community.dto.response.post.PostDetailResponse;
 import com.example.community.dto.response.post.PostListResponse;
 import com.example.community.service.post.PostService;
-import com.example.community.service.post.PostViewService;
+import com.example.community.service.post.viewcount.PostViewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
