@@ -1,6 +1,8 @@
 package com.example.community.service.post;
 
+import com.example.community.common.exception.ErrorMessage;
 import com.example.community.common.exception.custom.ForbiddenException;
+import com.example.community.common.exception.custom.UnauthorizedException;
 import com.example.community.common.util.AuthValidator;
 import com.example.community.common.exception.custom.ResourceNotFoundException;
 import com.example.community.domain.Post;
@@ -16,6 +18,7 @@ import com.example.community.dto.response.post.PostListResponse;
 import com.example.community.repository.post.PostLikeRepository;
 import com.example.community.repository.post.PostRepository;
 import com.example.community.repository.post.PostImageRepository;
+import com.example.community.repository.user.UserRepository;
 import com.example.community.service.post.viewcount.PostViewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +43,7 @@ public class PostServiceImpl implements PostService{
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
     private final PostLikeRepository postLikeRepository;
+    private final UserRepository userRepository;
 
     private final PostViewService postViewService;
     private final AuthValidator authValidator;
@@ -53,9 +57,17 @@ public class PostServiceImpl implements PostService{
     @Override
     public PostCreateResponse createPost(PostRequestDto dto, User user) {
 
+        if (user == null || user.getId() == null) {
+            throw new UnauthorizedException(UNAUTHORIZED);
+        }
+
+        User loginUser = userRepository.findById(user.getId()).orElseThrow(
+                () -> new UnauthorizedException(UNAUTHORIZED)
+        );
+
         Post post = PostRequestDto.ofEntity(dto);
 
-        post.setMappingUser(user);
+        post.setMappingUser(loginUser);
 
         Post savedPost = postRepository.save(post);
 
@@ -75,9 +87,11 @@ public class PostServiceImpl implements PostService{
 
     @Override
     public PostDetailResponse getPost(Long id) {
+
         Post post = postRepository
                 .findByIdWithUser(id)
                 .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_NOT_FOUND));
+
         postViewService.increaseViewcount(id);
         return PostDetailResponse.fromEntity(post);
     }
