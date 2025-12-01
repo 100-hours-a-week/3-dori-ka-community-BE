@@ -18,16 +18,14 @@ class UserRepositoryTest {
     @Autowired
     private UserRepository userRepository;
 
+    private static final String DEFAULT_PASSWORD = "1234";
+    private static final String DEFAULT_PROFILE_IMAGE = "profileImage";
+
     @Test
     @DisplayName("유저 저장 성공")
     void save_success() {
         //given
-        User user = User.builder()
-                .email("test1@test.co.kr")
-                .password("1234")
-                .nickname("test1")
-                .profileImage("profileImage")
-                .build();
+        User user = buildUser("test1@test.co.kr", "test1");
 
         //when
         userRepository.save(user);
@@ -43,26 +41,9 @@ class UserRepositoryTest {
     void save_fail_duplicate_email() {
 
         //given
-        User user1 = User.builder()
-                .email("test1@test.co.kr")
-                .password("1234")
-                .nickname("test1")
-                .profileImage("profileImage")
-                .build();
-
-        User user2 = User.builder()
-                .email("test1@test.co.kr")
-                .password("1234")
-                .nickname("test2")
-                .profileImage("profileImage")
-                .build();
-
-        User user3 = User.builder()
-                .email("test2@test.co.kr")
-                .password("1234")
-                .nickname("test1")
-                .profileImage("profileImage")
-                .build();
+        User user1 = buildUser("test1@test.co.kr", "test1");
+        User user2 = buildUser("test1@test.co.kr", "test2");
+        User user3 = buildUser("test2@test.co.kr", "test1");
 
         //when
         userRepository.save(user1);
@@ -77,12 +58,7 @@ class UserRepositoryTest {
     void find_Email() {
 
         //given
-        User user1 = User.builder()
-                .email("test1@test.co.kr")
-                .password("1234")
-                .nickname("test1")
-                .profileImage("profileImage")
-                .build();
+        User user1 = buildUser("test1@test.co.kr", "test1");
 
         userRepository.save(user1);
 
@@ -101,12 +77,7 @@ class UserRepositoryTest {
     void find_Nickname() {
 
         //given
-        User user1 = User.builder()
-                .email("test1@test.co.kr")
-                .password("1234")
-                .nickname("test1")
-                .profileImage("profileImage")
-                .build();
+        User user1 = buildUser("test1@test.co.kr", "test1");
 
         userRepository.save(user1);
 
@@ -125,21 +96,25 @@ class UserRepositoryTest {
     void exist_Email() {
 
         //given
-        User user1 = User.builder()
-                .email("test1@test.co.kr")
-                .password("1234")
-                .nickname("test1")
-                .profileImage("profileImage")
-                .build();
+        User user1 = buildUser("test1@test.co.kr", "test1");
 
         userRepository.save(user1);
 
         //when
-        Boolean success = userRepository.existsByEmail("test1@test.co.kr");
-        Boolean fail = userRepository.existsByEmail("test3@test.co.kr");
+        boolean success = userRepository.existsByEmail("test1@test.co.kr");
+        boolean fail = userRepository.existsByEmail("test3@test.co.kr");
 
         //then
-        assertThat(success).isEqualTo(true);
-        assertThat(fail).isEqualTo(false);
+        assertThat(success).isTrue();
+        assertThat(fail).isFalse();
+    }
+
+    private User buildUser(String email, String nickname) {
+        return User.builder()
+                .email(email)
+                .password(DEFAULT_PASSWORD)
+                .nickname(nickname)
+                .profileImage(DEFAULT_PROFILE_IMAGE)
+                .build();
     }
 }

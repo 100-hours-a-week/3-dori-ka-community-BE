@@ -1,131 +1,105 @@
 package com.example.community.service.auth;
 
-import com.example.community.common.exception.custom.BadRequestException;
 import com.example.community.domain.RefreshToken;
 import com.example.community.domain.User;
-import com.example.community.dto.request.user.UserLoginDto;
-import com.example.community.dto.request.user.UserSignUpDto;
 import com.example.community.dto.response.user.LoginResponse;
 import com.example.community.repository.token.RefreshTokenRepository;
 import com.example.community.repository.user.UserRepository;
-import com.example.community.service.user.UserService;
+import com.example.community.security.CustomUserDetails;
+import com.example.community.security.jwt.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
-    @Autowired
-    private AuthService authService;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
-
-    @Autowired
+    @Mock
     private UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private JwtUtil jwtUtil;
+
+    @InjectMocks
+    private AuthServiceImpl authService;
 
     @Test
     @DisplayName("로그인 - 성공")
     void login_success() {
+        User user = buildUser("test@test.co.kr");
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-        //given
-        UserSignUpDto signUpRequest = UserSignUpDto.builder()
-                .email("test@test.co.kr")
-                .password("1234")
-                .passwordCheck("1234")
-                .nickname("dori")
-                .profileImage("")
-                .build();
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
+        when(jwtUtil.createAccessToken(user)).thenReturn("access-token");
+        when(jwtUtil.createRefreshToken(user)).thenReturn("refresh-token");
+        when(refreshTokenRepository.findByUser(user)).thenReturn(Optional.empty());
 
-        userService.signUp(signUpRequest);
+        LoginResponse response = authService.login(user.getEmail(), "1234");
 
-        UserLoginDto request = UserLoginDto.builder()
-                .email("test@test.co.kr")
-                .password("1234")
-                .build();
-
-
-        //when
-        LoginResponse response = authService.login(request.getEmail(), request.getPassword());
-
-        //then
-        assertThat(response.getEmail()).isEqualTo(request.getEmail());
-        assertThat(response.getAccessToken()).isNotBlank();
-        assertThat(response.getRefreshToken()).isNotBlank();
+        assertThat(response.getEmail()).isEqualTo(user.getEmail());
+        assertThat(response.getAccessToken()).isEqualTo("access-token");
+        assertThat(response.getRefreshToken()).isEqualTo("refresh-token");
+        verify(refreshTokenRepository).save(any(RefreshToken.class));
     }
 
     @Test
     @DisplayName("로그인 - 실패, 비밀번호 불일치")
     void login_fail() {
-        //given
-        UserSignUpDto signUpRequest = UserSignUpDto.builder()
-                .email("test@test.co.kr")
-                .password("1234")
-                .passwordCheck("1234")
-                .nickname("dori")
-                .profileImage("")
-                .build();
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException("bad credentials"));
 
-        userService.signUp(signUpRequest);
-
-        //when
-        UserLoginDto request = UserLoginDto.builder()
-                .email("test@test.co.kr")
-                .password("12345")
-                .build();
-
-        //then
-        assertThatThrownBy(() -> authService.login(request.getEmail(), request.getPassword()))
-                .isInstanceOf(AuthenticationException.class);
-
+        assertThatThrownBy(() -> authService.login("test@test.co.kr", "wrong"))
+                .isInstanceOf(BadCredentialsException.class);
     }
 
     @Test
     @DisplayName("로그아웃 성공")
     void logout_success() {
+        User user = buildUser("test@test.co.kr");
+        RefreshToken refreshToken = RefreshToken.builder()
+                .refreshToken("refresh-token")
+                .user(user)
+                .expirationDate(LocalDateTime.now().plusDays(1))
+                .build();
 
-        // given
-        UserSignUpDto signUpRequest = UserSignUpDto.builder()
-                .email("test@test.co.kr")
-                .password("1234")
-                .passwordCheck("1234")
-                .nickname("dori")
+        when(jwtUtil.getEmail("access-token")).thenReturn(user.getEmail());
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(refreshTokenRepository.findByUser(user)).thenReturn(Optional.of(refreshToken));
+
+        authService.logout("access-token");
+
+        verify(refreshTokenRepository).delete(refreshToken);
+    }
+
+    private User buildUser(String email) {
+        return User.builder()
+                .email(email)
+                .password("encoded")
+                .nickname("tester")
                 .profileImage("")
                 .build();
-
-        userService.signUp(signUpRequest);
-
-        UserLoginDto loginRequest = UserLoginDto.builder()
-                .email("test@test.co.kr")
-                .password("1234")
-                .build();
-
-        LoginResponse response = authService.login(loginRequest.getEmail(), loginRequest.getPassword());
-
-        User user = userRepository.findByEmail("test@test.co.kr").orElseThrow();
-        assertThat(refreshTokenRepository.findByUser(user)).isPresent();
-
-        // when
-        authService.logout(response.getAccessToken());
-
-        // then
-        Optional<RefreshToken> token = refreshTokenRepository.findByUser(user);
-        assertThat(token).isNotPresent();
     }
 }
