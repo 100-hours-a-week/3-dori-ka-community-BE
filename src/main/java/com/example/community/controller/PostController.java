@@ -69,15 +69,15 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("조회수 조회 성공", viewCount));
     }
 
-    /**
+/*    *//**
      * 무한 스크롤링 구현을 위해..
      * @param pageable
      * @return
-     */
+     *//*
     @GetMapping("/slice")
     public ResponseEntity<APIResponse<Slice<PostListResponse>>> getAllPostSlice(
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         Slice<PostListResponse> posts = postService.getAllPostSlice(pageable);
         return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("게시글 조회 성공", posts));
-    }
+    }*/
 }
