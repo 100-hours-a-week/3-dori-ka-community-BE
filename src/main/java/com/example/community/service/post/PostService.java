@@ -25,7 +25,7 @@ public interface PostService {
 
     Page<PostListResponse> getAllPostByUser(User user, Pageable pageable);
 
-    Slice<PostListResponse> getAllPostSlice(Pageable pageable);
+//    Slice<PostListResponse> getAllPostSlice(Pageable pageable);
 
     List<PostImageResponse> getAllPostImageByPostId(Long id);
 

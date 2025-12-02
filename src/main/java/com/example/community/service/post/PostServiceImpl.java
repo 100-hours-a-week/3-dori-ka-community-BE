@@ -1,13 +1,11 @@
 package com.example.community.service.post;
 
-import com.example.community.common.exception.ErrorMessage;
 import com.example.community.common.exception.custom.ForbiddenException;
 import com.example.community.common.exception.custom.UnauthorizedException;
 import com.example.community.common.util.AuthValidator;
 import com.example.community.common.exception.custom.ResourceNotFoundException;
 import com.example.community.domain.Post;
 import com.example.community.domain.PostImage;
-import com.example.community.domain.PostLike;
 import com.example.community.domain.User;
 import com.example.community.dto.request.post.PostRequestDto;
 import com.example.community.dto.request.post.PostUpdateDto;
@@ -162,12 +160,12 @@ public class PostServiceImpl implements PostService{
         return posts.map(PostListResponse::fromEntity);
     }
 
-    @Override
+/*    @Override
     public Slice<PostListResponse> getAllPostSlice(Pageable pageable) {
         Slice<Post> posts = postRepository.findAllWithUserSlice(pageable);
 
         return posts.map(PostListResponse::fromEntity);
-    }
+    }*/
 
     @Override
     public List<PostImageResponse> getAllPostImageByPostId(Long id) {
