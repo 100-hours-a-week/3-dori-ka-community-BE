@@ -197,8 +197,9 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("사용자 정보 조회 - ID 기반")
+    @DisplayName("사용자 정보 조회 - Id")
     void find_userInfo_by_id() {
+
         User user = buildUser("test@test.com", "tester", "profile");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
