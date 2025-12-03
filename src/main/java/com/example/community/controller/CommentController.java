@@ -5,7 +5,7 @@ import com.example.community.common.response.APIResponse;
 import com.example.community.domain.User;
 import com.example.community.dto.request.comment.CommentRequestDto;
 import com.example.community.dto.response.comment.CommentResponse;
-import com.example.community.service.comment.CommentServiceImpl;
+import com.example.community.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CommentController {
 
-    private final CommentServiceImpl commentService;
+    private final CommentService commentService;
 
     @PostMapping
     public ResponseEntity<APIResponse<CommentResponse>> createComment(
