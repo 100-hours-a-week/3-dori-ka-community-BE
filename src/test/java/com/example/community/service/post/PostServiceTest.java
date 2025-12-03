@@ -135,7 +135,7 @@ class PostServiceTest {
     @DisplayName("게시글 수정 - 실패(사용자 불일치)")
     void update_post_fail_different_user() {
         User owner = createUser(1L, "owner@test.com", "owner");
-        User attacker = createUser(2L, "bad@test.com", "bad");
+        User diffUser = createUser(2L, "bad@test.com", "bad");
 
         Post post = createPost(1L, owner, "old", "old");
 
@@ -144,13 +144,13 @@ class PostServiceTest {
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
 
         doThrow(new ForbiddenException(ErrorMessage.FORBIDDEN))
-                .when(authValidator).validate(attacker, owner);
+                .when(authValidator).validate(diffUser, owner);
 
-        assertThatThrownBy(() -> postService.update(dto, post.getId(), attacker))
+        assertThatThrownBy(() -> postService.update(dto, post.getId(), diffUser))
                 .isInstanceOf(ForbiddenException.class);
 
         verify(postRepository).findById(post.getId());
-        verify(authValidator).validate(attacker, owner);
+        verify(authValidator).validate(diffUser, owner);
         verifyNoInteractions(postImageRepository, s3Client);
     }
 
