@@ -1,9 +1,13 @@
 package com.example.community.controller;
 
 import com.example.community.common.exception.custom.ResourceNotFoundException;
+import com.example.community.common.exception.custom.UnauthorizedException;
+import com.example.community.dto.request.post.PostRequestDto;
 import com.example.community.dto.request.post.PostUpdateDto;
+import com.example.community.dto.response.post.PostCreateResponse;
 import com.example.community.dto.response.post.PostDetailResponse;
 import com.example.community.dto.response.post.PostListResponse;
+import com.example.community.repository.user.UserRepository;
 import com.example.community.security.jwt.JwtAuthenticationFilter;
 import com.example.community.service.post.PostService;
 import com.example.community.service.post.viewcount.PostViewService;
@@ -40,6 +44,9 @@ class PostControllerTest {
 
     @MockitoBean
     private PostService postService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @MockitoBean
     private PostViewService postViewService;
@@ -210,5 +217,118 @@ class PostControllerTest {
 
     }
 
+    @Test
+    @DisplayName("게시글 작성 - 성공")
+    void create_post_success() throws Exception {
+        PostRequestDto dto = PostRequestDto.builder()
+                .title("test title")
+                .content("test content")
+                .postImageUrls(List.of())
+                .build();
+
+        PostCreateResponse response = PostCreateResponse.builder()
+                .postId(1L)
+                .title("test title")
+                .createdDate("0000-01-01")
+                .build();
+
+        when(postService.createPost(any(PostRequestDto.class), any())).thenReturn(response);
+
+        mockMvc.perform(post("/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("게시글 작성 성공"))
+                .andExpect(jsonPath("$.data.title").value("test title"))
+                .andExpect(jsonPath("$.data.createdDate").value("0000-01-01"));
+
+        verify(postService).createPost(any(PostRequestDto.class), any());
+    }
+
+    @Test
+    @DisplayName("게시글 작성 - 실패")
+    void create_post_fail() throws Exception {
+        PostRequestDto dto = PostRequestDto.builder()
+                .title("test title")
+                .content("test content")
+                .postImageUrls(List.of())
+                .build();
+
+        when(postService.createPost(any(PostRequestDto.class), isNull()))
+                .thenThrow(new UnauthorizedException(UNAUTHORIZED));
+
+        mockMvc.perform(post("/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("로그인 후 이용해주세요."));
+
+        verify(postService).createPost(any(PostRequestDto.class), isNull());
+
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 - 성공")
+    void delete_post_success() throws Exception {
+
+        Long postId = 1L;
+
+        doNothing().when(postService).delete(postId);
+
+        mockMvc.perform(delete("/posts/{id}", postId))
+                .andExpect(status().isNoContent());
+
+        verify(postService).delete(postId);
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 - 실패")
+    void delete_post_fail() throws Exception {
+
+        Long postId = 100L;
+
+        doThrow(new ResourceNotFoundException(RESOURCE_NOT_FOUND))
+                .when(postService)
+                .delete(postId);
+
+        mockMvc.perform(delete("/posts/{id}", postId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("존재하지 않는 페이지입니다."));
+
+
+        verify(postService).delete(postId);
+    }
+
+    @Test
+    @DisplayName("게시글 조회수 조회 - 성공")
+    void get_viewCount_success() throws Exception {
+
+        Long postId = 100L;
+
+        when(postViewService.getViewCount(postId)).thenReturn(10L);
+
+        mockMvc.perform(get("/posts/{id}/viewcounts", postId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("조회수 조회 성공"))
+                .andExpect(jsonPath("$.data").value(10L));
+
+        verify(postViewService).getViewCount(postId);
+    }
+
+    @Test
+    @DisplayName("게시글 조회수 조회 - 실패")
+    void get_viewCount_fail() throws Exception {
+
+        Long postId = 100L;
+
+        when(postViewService.getViewCount(postId))
+                .thenThrow(new ResourceNotFoundException(RESOURCE_NOT_FOUND));
+
+        mockMvc.perform(get("/posts/{id}/viewcounts", postId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("존재하지 않는 페이지입니다."));
+
+        verify(postViewService).getViewCount(postId);
+    }
 
 }
