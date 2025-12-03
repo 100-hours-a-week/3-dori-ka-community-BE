@@ -28,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import org.springframework.test.util.ReflectionTestUtils;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
 import java.util.*;
 
@@ -38,13 +39,20 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
 
-    @Mock private PostRepository postRepository;
-    @Mock private PostImageRepository postImageRepository;
-    @Mock private PostLikeRepository postLikeRepository;
-    @Mock private PostViewService postViewService;
-    @Mock private AuthValidator authValidator;
-    @Mock private S3Client s3Client;
-    @Mock private UserRepository userRepository;
+    @Mock
+    private PostRepository postRepository;
+    @Mock
+    private PostImageRepository postImageRepository;
+    @Mock
+    private PostLikeRepository postLikeRepository;
+    @Mock
+    private PostViewService postViewService;
+    @Mock
+    private AuthValidator authValidator;
+    @Mock
+    private S3Client s3Client;
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private PostServiceImpl postService;
@@ -240,18 +248,81 @@ class PostServiceTest {
         verify(postImageRepository).findAllByPostId(post.getId());
     }
 
+    @Test
+    @DisplayName("게시글 삭제 - 성공")
+    void delete_post_success() {
+
+        // given
+        User user = createUser(1L, "test@test.com", "tester");
+        Post post = createPost(1L, user, "title", "content");
+
+        PostImage image1 = createPostImage(1L, post, "img1.jpg");
+        PostImage image2 = createPostImage(2L, post, "img2.jpg");
+
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        when(postImageRepository.findAllByPostId(post.getId()))
+                .thenReturn(List.of(image1, image2));
+
+        postService.delete(post.getId());
+
+        verify(postRepository).findById(post.getId());
+        verify(postImageRepository).findAllByPostId(post.getId());
+        verify(s3Client, times(2)).deleteObject(any(DeleteObjectRequest.class));
+        verify(postLikeRepository).deleteAllByPostId(post.getId());
+        verify(postRepository).delete(post);
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 - 실패: 존재하지 않는 게시글")
+    void delete_post_fail() {
+
+        Long invalidId = 999L;
+
+        when(postRepository.findById(invalidId))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.delete(invalidId))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(postRepository).findById(invalidId);
+        verify(postImageRepository, never()).findAllByPostId(any());
+        verify(s3Client, never()).deleteObject(any(DeleteObjectRequest.class));
+        verify(postLikeRepository, never()).deleteAllByPostId(any());
+        verify(postRepository, never()).delete(any());
+    }
+
+
+
     private User createUser(Long id, String email, String nickname) {
         User user = User.builder()
-                .email(email).password("1234").nickname(nickname)
-                .profileImage("img").build();
+                .email(email)
+                .password("1234")
+                .nickname(nickname)
+                .profileImage("img")
+                .build();
+
         ReflectionTestUtils.setField(user, "id", id);
         return user;
     }
 
     private Post createPost(Long id, User user, String title, String content) {
-        Post post = Post.builder().title(title).content(content).user(user).build();
+        Post post = Post.builder()
+                .title(title)
+                .content(content)
+                .user(user)
+                .build();
+
         ReflectionTestUtils.setField(post, "id", id);
         return post;
+    }
+
+    private PostImage createPostImage(Long id, Post post, String postImageUrl) {
+        PostImage postImage = PostImage.builder()
+                .post(post)
+                .postImageUrl(postImageUrl).build();
+
+        ReflectionTestUtils.setField(postImage, "id", id);
+        return postImage;
     }
 
     private PostRequestDto createPostRequestDto(String t, String c, List<String> imgs) {
