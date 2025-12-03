@@ -73,6 +73,7 @@ public class CommentServiceImpl implements CommentService{
         Comment comment = commentRepository.findByIdWithUser(id).orElseThrow(
                 () -> new ResourceNotFoundException(RESOURCE_NOT_FOUND)
         );
+
         authValidator.validate(user, comment.getUser());
 
         comment.update(dto.getContent());
