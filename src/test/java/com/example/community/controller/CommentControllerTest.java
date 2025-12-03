@@ -78,7 +78,7 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 작성 - 실패(존재하지 않는 게시물)")
-    void create_comment_fail() throws Exception{
+    void create_comment_fail_no_post() throws Exception{
 
         CommentRequestDto dto = CommentRequestDto.builder()
                 .content("test content")
@@ -95,6 +95,24 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.message").value("존재하지 않는 페이지입니다."));
 
         verify(commentService).createComment(any(CommentRequestDto.class), eq(POST_ID), any());
+    }
+
+    @Test
+    @DisplayName("댓글 작성 - 실패(내용 없음)")
+    void create_comment_fail_no_content() throws Exception{
+
+        CommentRequestDto dto = CommentRequestDto.builder()
+                .content("")
+                .build();
+
+        mockMvc.perform(post("/posts/{postId}/comments", POST_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .header("Authorization", "Bearer dummy-token"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("댓글을 작성해주세요"));
+
+        verify(commentService, never()).createComment(any(CommentRequestDto.class), eq(POST_ID), any());
     }
 
     @Test
@@ -165,6 +183,61 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.data.modifiedDate").value("0001-01-01"));
 
         verify(commentService).update(any(CommentRequestDto.class), eq(commentId), any());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 - 실패(존재하지 않는 댓글)")
+    void update_comment_fail_no_comment() throws Exception {
+
+        Long wrongId = 100L;
+
+        CommentRequestDto dto = CommentRequestDto.builder()
+                .content("test content")
+                .build();
+
+        when(commentService.update(any(CommentRequestDto.class), eq(wrongId), any()))
+                .thenThrow(new ResourceNotFoundException(RESOURCE_NOT_FOUND));
+
+        mockMvc.perform(patch("/posts/{postId}/comments/{commentId}", POST_ID, wrongId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("존재하지 않는 페이지입니다."));
+
+        verify(commentService).update(any(CommentRequestDto.class), eq(wrongId), any());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 - 실패(내용 없음)")
+    void update_comment_fail_no_content() throws Exception{
+
+        Long commentId = 1L;
+
+        CommentRequestDto dto = CommentRequestDto.builder()
+                .content("")
+                .build();
+
+        mockMvc.perform(patch("/posts/{postId}/comments/{commentId}", POST_ID, 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("댓글을 작성해주세요"));
+
+        verify(commentService, never()).update(any(CommentRequestDto.class), any(), any());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 - 성공")
+    void delete_comment_success() throws Exception {
+
+        Long commentId = 1L;
+
+        doNothing().when(commentService).delete(commentId);
+
+        mockMvc.perform(delete("/posts/{postId}/comments/{commentsId}", POST_ID, commentId))
+                .andExpect(status().isNoContent());
+
+        verify(commentService).delete(commentId);
     }
 
 }

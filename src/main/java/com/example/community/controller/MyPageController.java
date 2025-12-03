@@ -53,7 +53,7 @@ public class MyPageController {
     }
 
     @PatchMapping
-    public ResponseEntity<APIResponse<UserDetailResponse>> userUpdate(@RequestBody UserUpdateDto dto, @LoginUser User user) {
+    public ResponseEntity<APIResponse<UserDetailResponse>> userUpdate(@RequestBody @Valid UserUpdateDto dto, @LoginUser User user) {
 
         UserDetailResponse userResponse = userService.updateUser(dto, user);
 

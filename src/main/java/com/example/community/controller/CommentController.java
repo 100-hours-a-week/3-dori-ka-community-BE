@@ -6,6 +6,7 @@ import com.example.community.domain.User;
 import com.example.community.dto.request.comment.CommentRequestDto;
 import com.example.community.dto.response.comment.CommentResponse;
 import com.example.community.service.comment.CommentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +26,7 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<APIResponse<CommentResponse>> createComment(
             @PathVariable Long postId,
-            @RequestBody CommentRequestDto dto,
+            @RequestBody @Valid CommentRequestDto dto,
             @LoginUser User user
             ) {
         CommentResponse comment = commentService.createComment(dto, postId, user);
@@ -46,7 +47,7 @@ public class CommentController {
     public ResponseEntity<APIResponse<CommentResponse>> updateComment(
             @PathVariable Long postId,
             @PathVariable Long id,
-            @RequestBody CommentRequestDto dto,
+            @RequestBody @Valid CommentRequestDto dto,
             @LoginUser User user
     ) {
         CommentResponse comment = commentService.update(dto, id, user);
