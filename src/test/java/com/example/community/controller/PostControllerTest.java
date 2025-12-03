@@ -130,7 +130,6 @@ class PostControllerTest {
                 .viewCount(1L)
                 .build();
 
-        Pageable pageable = PageRequest.of(0, 10);
 
         Page<PostListResponse> page = new PageImpl<>(List.of(post, post1));
 
@@ -213,6 +212,8 @@ class PostControllerTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("존재하지 않는 페이지입니다."));
+
+        verify(postService).update(any(PostUpdateDto.class), any(), any());
 
     }
 
