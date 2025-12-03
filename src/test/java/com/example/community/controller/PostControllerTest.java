@@ -59,7 +59,6 @@ class PostControllerTest {
     @Test
     @DisplayName("게시글 상세 조회 - 성공")
     void get_post_success() throws Exception {
-
         //given
         PostDetailResponse response = PostDetailResponse.builder()
                 .postId(1L)
@@ -193,7 +192,7 @@ class PostControllerTest {
 
     @Test
     @DisplayName("게시글 수정 - 실패(존재하지 않는 게시물)")
-    void update_post_fail() throws Exception {
+    void update_post_fail_no_post() throws Exception {
 
         //given
         Long postId = 100L;
@@ -215,6 +214,48 @@ class PostControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("존재하지 않는 페이지입니다."));
 
+    }
+
+    @Test
+    @DisplayName("게시글 수정 - 실패(제목 없음)")
+    void update_post_fail_no_title() throws Exception {
+
+        PostUpdateDto dto = PostUpdateDto.builder()
+                .content("test content")
+                .keptImageIds(List.of())
+                .deletedImageIds(List.of())
+                .newPostImageUrls(List.of())
+                .build();
+
+        mockMvc.perform(patch("/posts/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .header("Authorization", "Bearer dummy-token"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("제목을 작성해주세요"));
+
+        verify(postService, never()).update(any(PostUpdateDto.class), anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("게시글 수정 - 실패(내용 없음)")
+    void update_post_fail_no_content() throws Exception {
+
+        PostUpdateDto dto = PostUpdateDto.builder()
+                .title("test title")
+                .keptImageIds(List.of())
+                .deletedImageIds(List.of())
+                .newPostImageUrls(List.of())
+                .build();
+
+        mockMvc.perform(patch("/posts/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .header("Authorization", "Bearer dummy-token"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("내용을 작성해주세요"));
+
+        verify(postService, never()).update(any(PostUpdateDto.class), anyLong(), any());
     }
 
     @Test
@@ -246,8 +287,8 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("게시글 작성 - 실패")
-    void create_post_fail() throws Exception {
+    @DisplayName("게시글 작성 - 실패(권한 없는 사용자)")
+    void create_post_fail_no_auth() throws Exception {
         PostRequestDto dto = PostRequestDto.builder()
                 .title("test title")
                 .content("test content")
@@ -264,7 +305,46 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.message").value("로그인 후 이용해주세요."));
 
         verify(postService).createPost(any(PostRequestDto.class), isNull());
+    }
 
+    @Test
+    @DisplayName("게시글 작성 - 실패(제목 없음)")
+    void create_post_fail_no_title() throws Exception {
+        // given
+        PostRequestDto dto = PostRequestDto.builder()
+                .title("")
+                .content("test content")
+                .postImageUrls(List.of())
+                .build();
+
+        mockMvc.perform(post("/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .header("Authorization", "Bearer dummy-token"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("제목을 작성해주세요"));
+
+        verify(postService, never()).createPost(any(), any());
+    }
+
+    @Test
+    @DisplayName("게시글 작성 - 실패(내용 없음)")
+    void create_post_fail_no_content() throws Exception {
+        // given
+        PostRequestDto dto = PostRequestDto.builder()
+                .title("test title")
+                .content("")
+                .postImageUrls(List.of())
+                .build();
+
+        mockMvc.perform(post("/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .header("Authorization", "Bearer dummy-token"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("내용을 작성해주세요"));
+
+        verify(postService, never()).createPost(any(), any());
     }
 
     @Test

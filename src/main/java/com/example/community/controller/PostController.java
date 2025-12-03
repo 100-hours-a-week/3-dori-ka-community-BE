@@ -46,7 +46,7 @@ public class PostController {
 
 
     @PatchMapping("/{id}")
-    public ResponseEntity<APIResponse<PostDetailResponse>> updatePost(@PathVariable Long id, @RequestBody PostUpdateDto dto, @LoginUser User user) {
+    public ResponseEntity<APIResponse<PostDetailResponse>> updatePost(@PathVariable Long id, @RequestBody @Valid PostUpdateDto dto, @LoginUser User user) {
         PostDetailResponse post = postService.update(dto, id, user);
         return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success("게시글 수정 성공", post));
     }
