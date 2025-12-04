@@ -1,5 +1,6 @@
 package com.example.community.dto.response.s3;
 
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
@@ -9,6 +10,7 @@ public class PresignedUrlResponse {
     private String key;
     private String profileImageUrl;
 
+    @Builder
     public PresignedUrlResponse(String presignedUrl, String key, String profileImageUrl) {
         this.presignedUrl = presignedUrl;
         this.key = key;
