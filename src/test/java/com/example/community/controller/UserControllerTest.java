@@ -176,12 +176,12 @@ class UserControllerTest {
 
     @ParameterizedTest
     @CsvSource({
-            "1234567, 길이가 8자 미만",
-            "123456789012345678901, 길이가 20자 초과",
-            "abcdefgh, 소문자만",
-            "ABCDEFGH, 대문자만",
-            "12345678, 숫자만",
-            "!!!!@@@@, 특수문자만"
+            "1234567",
+            "123456789012345678901",
+            "abcdefgh",
+            "ABCDEFGH",
+            "12345678",
+            "!!!!@@@@"
     })
     @DisplayName("회원가입 - 실패(비밀번호 규칙/길이)")
     void signUp_fail_invalid_password_rule(String invalidPassword) throws Exception {
@@ -274,7 +274,7 @@ class UserControllerTest {
                         "올바른 이메일 주소 형식을 입력해주세요"
                 ),
                 Arguments.of(
-                        UserSignUpDto.builder().email("test@test.com").password("").passwordCheck("ValidPass1!").nickname("tester").build(),
+                        UserSignUpDto.builder().email("test@test.com").passwordCheck("ValidPass1!").nickname("tester").build(),
                         "비밀번호를 입력해주세요"
                 ),
                 Arguments.of(
