@@ -254,7 +254,7 @@ com.example.community
 
 ---
 
-## 📊 테스트 커버리지(JaCoCo)
+### 📊 테스트 커버리지(JaCoCo)
 
 JaCoCo를 적용하여 전체 코드 커버리지 및 라인 커버리지를 측정했습니다.
 
