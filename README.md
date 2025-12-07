@@ -1,6 +1,7 @@
 # 📝 개인 프로젝트 - 커뮤니티 구현
 본 프로젝트는 
-**회원가입/로그인**, **게시글 CRUD**, **댓글 CRUD** 등을 포함한 풀스택 개인 프로젝트입니다. Spring Boot + Vanilla JS/React 기반의 커뮤니티 웹 서비스를 구현했습니다.
+**회원가입/로그인**, **게시글 CRUD**, **댓글 CRUD** 등을 포함한 풀스택 개인 프로젝트입니다. Spring Boot + Vanilla JS/React 기반의 커뮤니티 웹 서비스를 구현했습니다. 코드를 구현하면서 문제를 해결하고 성능을 개선하는 것에 집중한 프로젝트입니다.
+
 
 ---
 
@@ -21,21 +22,14 @@
 - github: https://github.com/100-hours-a-week/3-dori-ka-community-FE
 ---
 
-### Deployment
-
-- AWS EC2(Backend)
-- RDS
-- AWS S3(Frontend)
----
-
 ## ✨ 주요 기능
 
-- 회원가입
-- 로그인 / 로그아웃
+- 회원가입 / 로그인 / 로그아웃
 - 게시글 및 댓글 CRUD
-- Presigned-URL을 통해 Aws S3 파일 업로드
-- Spring Cache + JdbcTemplate Batch Update를 통한 조회수 Update 최적화
+- Presigned-URL을 통한 Aws S3 파일 업로드
+- Spring Cache + JdbcTemplate Batch Update를 통한 조회수 증가
 - Swagger UI + Rest Docs를 사용한 문서화
+- JaCoCo를 통한 테스트 커버리지 측정 및 리포트를 자동화
 
 ---
 
@@ -59,6 +53,7 @@ com.example.community
 │   │   ├── ApiExceptionHandler.java
 │   │   ├── ErrorMessage.java
 │   │   ├── custom
+│   │   │   ├── CustomException.java
 │   │   │   ├── BadRequestException.java
 │   │   │   ├── DuplicatedException.java
 │   │   │   ├── ResourceNotFoundException.java
@@ -67,27 +62,37 @@ com.example.community
 │   │   └── GlobalExceptionHandler.java
 │   │
 │   ├── util
-│   │   └── ImageUtil.java
+│   │   ├── AuthValidator.java
+│   │   └── DateTimeUtils.java
 │   │
-│   └── WebMvcConfig.java
+│   └── BaseTimeEntity.java
 │
 ├── config
+│   ├── AuditingConfig.java
 │   ├── AwsS3Config.java
 │   ├── CacheConfig.java
-│   ├── JwtConfig.java
-│   └── SecurityConfig.java
+│   ├── CorsConfig.java
+│   ├── PasswordEncoderConfig.java
+│   ├── SecurityConfig.java
+│   └── SwaggerConfig.java
 │
 ├── controller
 │   ├── AuthController.java
 │   ├── CommentController.java
+│   ├── MyPageController.java
 │   ├── PostController.java
+│   ├── PostImageController.java
+│   ├── PostLikeController.java
+│   ├── PresignedUrlController.java
 │   └── UserController.java
 │
 ├── domain
 │   ├── Comment.java
 │   ├── Post.java
 │   ├── PostImage.java
+│   ├── PostLike.java
 │   ├── RefreshToken.java
+│   ├── Role.java
 │   └── User.java
 │
 ├── dto
@@ -98,20 +103,26 @@ com.example.community
 │   │   │   ├── UserSignUpDto.java
 │   │   │   └── UserUpdateDto.java
 │   │   ├── post
-│   │   │   ├── PostCreateDto.java
-│   │   │   ├── PostUpdateDto.java
-│   │   │   └── PostSearchCondition.java
+│   │   │   ├── PostRequestDto.java
+│   │   │   └── PostUpdateDto.java
+│   │   ├── image
+│   │   │   └── PresignedUrlRequestDto.java
 │   │   └── comment
-│   │       └── CommentCreateDto.java
+│   │       └── CommentRequestDto.java
 │   │
 │   ├── response
 │   │   ├── user
 │   │   │   ├── LoginResponse.java
+│   │   │   ├── SignUpResponse.java
 │   │   │   └── UserDetailResponse.java
 │   │   ├── post
+│   │   │   ├── PostCreateResponse.java
 │   │   │   ├── PostDetailResponse.java
+│   │   │   ├── PostLikeResponse.java
 │   │   │   ├── PostListResponse.java
 │   │   │   └── PostImageResponse.java
+│   │   ├── s3
+│   │   │   └── PresignedUrlResponse.java
 │   │   └── comment
 │   │       └── CommentResponse.java
 │
@@ -120,6 +131,8 @@ com.example.community
 │   │   └── CommentRepository.java
 │   ├── post
 │   │   ├── PostImageRepository.java
+│   │   ├── PostJdbcRepository.java
+│   │   ├── PostLikeRepository.java
 │   │   └── PostRepository.java
 │   ├── token
 │   │   └── RefreshTokenRepository.java
@@ -131,21 +144,34 @@ com.example.community
 │   ├── CustomUserDetailsService.java
 │   ├── jwt
 │   │   ├── JwtAuthenticationFilter.java
-│   │   ├── JwtInterceptor.java
+│   │   ├── JwtAuthenticationEntryPoint.java
 │   │   ├── JwtUtil.java
-│   │   └── TokenProvider.java (없으면 무시)
+│   │   └── JwtAccessDeniedHandler.java
 │
 ├── service
 │   ├── auth
+│   │   ├── AuthService.java
 │   │   └── AuthServiceImpl.java
 │   ├── user
+│   │   ├── UserService.java
 │   │   └── UserServiceImpl.java
 │   ├── post
+│   │   ├── like
+│   │   │   ├── PostLikeService.java
+│   │   │   └── PostLikeServiceImpl.java
+│   │   ├── viewcount
+│   │   │   ├── PostViewService.java
+│   │   │   └── PostViewServiceImpl.java
+│   │   ├── PostService.java
 │   │   └── PostServiceImpl.java
+│   ├── s3
+│   │   ├── PresignedUrlService.java
+│   │   └── PresignedUrlServiceImpl.java
 │   └── comment
+│   │   ├── CommentService.java
 │       └── CommentServiceImpl.java
 ```
-### 핵심 기능
+## 핵심 기능
 ### 🔐 인증/인가 - JWT 기반
 
 - Access Token + Refresh Token 구조로 검증 및 로그인
@@ -186,7 +212,7 @@ com.example.community
 ---
 ## 📄 테스트 코드 작성
 
-본 프로젝트는 기능 안정성과 회귀 테스트 자동화를 위해 **단위 테스트(Unit Test)**와 **컨트롤러 테스트(MockMvc)** 기반의 검증 체계를 구축했습니다.
+본 프로젝트는 안정성 위해 **단위 테스트(Unit Test)**와 **컨트롤러 테스트(MockMvc)** 기반의 검증 체계를 구축했습니다.
 
 ### 🧪 테스트 작성 목적
 
@@ -201,7 +227,7 @@ com.example.community
 
 ### 1) 단위 테스트 (Mockito 기반)
 
-`Service` 레이어에서 의존성을 Mock 처리하여 **비즈니스 로직만 독립적으로 검증**했습니다.
+`Service` 레이을에서 의존성을 Mock 처리하여 **비즈니스 로직만 독립적으로 검증**했습니다.
 
 주요 검증 내용:
 
@@ -234,15 +260,14 @@ JaCoCo를 적용하여 전체 코드 커버리지 및 라인 커버리지를 측
 
 커버리지 확보 범위:
 
-- Service Layer 중심으로 **80% 이상 달성**
+- Service 및 Controller Layer 중심으로 **80% 이상 달성**
 - 예외 처리, 인증/인가, 게시글·댓글 CRUD 주요 로직 포함
-- 조회수 캐싱 및 배치 업데이트 로직 커버리지 확보
 
 커버리지 도입 효과:
 
 - 안정적인 리팩토링 가능
 - 핵심 기능 품질 보증
-- 버그 조기 발견 및 회귀 테스트 강화
+- 에러 조기 발견 및 회귀 테스트 강화
 
 ---
 ### 시연 영상
