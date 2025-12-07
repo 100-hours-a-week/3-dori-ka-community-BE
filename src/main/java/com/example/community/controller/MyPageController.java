@@ -8,7 +8,6 @@ import com.example.community.dto.request.user.UserUpdateDto;
 import com.example.community.dto.response.comment.CommentResponse;
 import com.example.community.dto.response.post.PostListResponse;
 import com.example.community.dto.response.user.UserDetailResponse;
-import com.example.community.security.CustomUserDetails;
 import com.example.community.service.comment.CommentService;
 import com.example.community.service.post.PostService;
 import com.example.community.service.user.UserService;
@@ -20,7 +19,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
