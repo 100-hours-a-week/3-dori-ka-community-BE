@@ -9,21 +9,17 @@ import com.example.community.domain.User;
 import com.example.community.dto.response.post.PostLikeResponse;
 import com.example.community.repository.post.PostLikeRepository;
 import com.example.community.repository.post.PostRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.parameters.P;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -83,7 +79,7 @@ class PostLikeServiceTest {
     }
 
     @Test
-    @DisplayName("게시글 좋아요 추가 - 실패(좋아요 중복)")
+    @DisplayName("게시글 좋아요 추가 - 실패(중복 좋아요)")
     void add_post_like_fail_duplicate() {
         User user = createUser(USER_ID);
         Post post = createPost(POST_ID, user);
@@ -104,7 +100,6 @@ class PostLikeServiceTest {
     @Test
     @DisplayName("게시글 좋아요 취소 - 성공")
     void remove_like_success() {
-
         User user = createUser(USER_ID);
         Post post = createPost(POST_ID, user);
         PostLike postLike = createPostLike(post, user);
@@ -127,16 +122,13 @@ class PostLikeServiceTest {
     @Test
     @DisplayName("게시글 좋아요 취소 - 실패(좋아요 없음)")
     void remove_like_fail() {
-
         User user = createUser(USER_ID);
 
         when(postLikeRepository.findByPostIdAndUserId(POST_ID, USER_ID))
                 .thenReturn(Optional.empty());
 
-
         assertThatThrownBy(() -> postLikeService.removeLike(POST_ID, user))
                 .isInstanceOf(BadRequestException.class);
-
 
         verify(postLikeRepository).findByPostIdAndUserId(POST_ID, USER_ID);
         verify(postLikeRepository, never()).delete(any(PostLike.class));
@@ -146,7 +138,6 @@ class PostLikeServiceTest {
     @Test
     @DisplayName("게시글 좋아요 조회 - 성공")
     void get_like_count_success() {
-
         User user = createUser(USER_ID);
 
         when(postLikeRepository.existsByPostIdAndUserId(POST_ID, USER_ID))
