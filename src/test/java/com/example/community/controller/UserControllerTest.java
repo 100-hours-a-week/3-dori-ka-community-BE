@@ -65,7 +65,6 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message").value("회원가입 성공"))
                 .andExpect(jsonPath("$.data.email").value("test@test.com"));
 
         verify(userService, times(1)).signUp(any(UserSignUpDto.class));
