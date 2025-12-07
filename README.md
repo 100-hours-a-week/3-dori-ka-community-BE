@@ -270,7 +270,12 @@ JaCoCo를 적용하여 전체 코드 커버리지 및 라인 커버리지를 측
 - 에러 조기 발견 및 회귀 테스트 강화
 
 ---
-### 시연 영상
+## 실행 방법
+```bash
+./gradlew clean build
+java -jar build/libs/*.jar
+```
+---
+## 시연 영상
 
 https://github.com/user-attachments/assets/b70d0bb3-5118-4907-900d-cbdb7605dbcb
-
