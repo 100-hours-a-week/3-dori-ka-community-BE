@@ -171,6 +171,9 @@ com.example.community
 │   │   ├── CommentService.java
 │       └── CommentServiceImpl.java
 ```
+## ERD
+<img width="1510" height="602" alt="Copy of erd for git" src="https://github.com/user-attachments/assets/770ef742-972c-4d13-94be-30264909f079" />
+
 ## 핵심 기능
 ### 🔐 인증/인가 - JWT 기반
 
