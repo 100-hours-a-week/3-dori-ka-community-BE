@@ -171,6 +171,9 @@ com.example.community
 │   │   ├── CommentService.java
 │       └── CommentServiceImpl.java
 ```
+## ERD
+<img width="1510" height="602" alt="Copy of erd for git" src="https://github.com/user-attachments/assets/770ef742-972c-4d13-94be-30264909f079" />
+
 ## 핵심 기능
 ### 🔐 인증/인가 - JWT 기반
 
@@ -270,12 +273,7 @@ JaCoCo를 적용하여 전체 코드 커버리지 및 라인 커버리지를 측
 - 에러 조기 발견 및 회귀 테스트 강화
 
 ---
-## 실행 방법
-```bash
-./gradlew clean build
-java -jar build/libs/*.jar
-```
----
-## 시연 영상
+### 시연 영상
 
 https://github.com/user-attachments/assets/b70d0bb3-5118-4907-900d-cbdb7605dbcb
+
