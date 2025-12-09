@@ -1,5 +1,6 @@
 package com.example.community.service.post;
 
+import com.example.community.common.exception.custom.BadRequestException;
 import com.example.community.common.exception.custom.ForbiddenException;
 import com.example.community.common.exception.custom.UnauthorizedException;
 import com.example.community.common.util.AuthValidator;
@@ -112,7 +113,7 @@ public class PostServiceImpl implements PostService{
                         .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_NOT_FOUND));
 
                 if (!postImage.getPost().getId().equals(post.getId())) {
-                    throw new ForbiddenException(FORBIDDEN);
+                    throw new BadRequestException(NO_IMAGE_IN_POST);
                 }
 
                 s3Client.deleteObject(DeleteObjectRequest.builder()
@@ -122,7 +123,6 @@ public class PostServiceImpl implements PostService{
 
                 postImageRepository.delete(postImage);
 
-                // 엔티티 관계에서도 제거
                 post.getPostImages().remove(postImage);
             }
         }

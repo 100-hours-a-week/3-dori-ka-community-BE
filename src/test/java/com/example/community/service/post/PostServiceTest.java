@@ -1,6 +1,7 @@
 package com.example.community.service.post;
 
 import com.example.community.common.exception.ErrorMessage;
+import com.example.community.common.exception.custom.BadRequestException;
 import com.example.community.common.exception.custom.ForbiddenException;
 import com.example.community.common.exception.custom.ResourceNotFoundException;
 import com.example.community.common.exception.custom.UnauthorizedException;
@@ -132,6 +133,60 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("게시글 수정 - 성공(기존 이미지 삭제)")
+    void update_post_success_delete_exist_image() {
+        User user = createUser(1L, "test@test.com", "test");
+        Post post = createPost(1L, user, "old title", "old content");
+        PostUpdateDto dto = createPostUpdateDto("new title", "new content",
+                List.of(1L), List.of());
+
+        PostImage existImage = createPostImage(1L, post, "oldPostImageUrl");
+        post.addPostImages(existImage);
+
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        doNothing().when(authValidator).validate(user, user);
+        when(postImageRepository.findById(dto.getDeletedImageIds().getFirst()))
+                .thenReturn(Optional.of(existImage));
+
+        PostDetailResponse response = postService.update(dto, post.getId(), user);
+
+        assertThat(response.getTitle()).isEqualTo("new title");
+        assertThat(post.getPostImages()).doesNotContain(existImage);
+
+        verify(postRepository).findById(post.getId());
+        verify(authValidator).validate(user, user);
+        verify(postImageRepository).findById(1L);
+        verify(s3Client).deleteObject(any(DeleteObjectRequest.class));
+        verify(postImageRepository).delete(existImage);
+        verify(postImageRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("게시글 수정 - 성공(새로운 이미지 추가)")
+    void update_post_success_add_new_image() {
+        User user = createUser(1L, "test@test.com", "test");
+        Post post = createPost(1L, user, "old title", "old content");
+        PostUpdateDto dto = createPostUpdateDto("new title", "new content",
+                List.of(), List.of("newPostImageUrl"));
+
+        PostImage existImage = createPostImage(1L, post, "newPostImageUrl");
+        post.addPostImages(existImage);
+
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        doNothing().when(authValidator).validate(user, user);
+
+        PostDetailResponse response = postService.update(dto, post.getId(), user);
+
+        assertThat(response.getTitle()).isEqualTo("new title");
+        assertThat(post.getPostImages()).contains(existImage);
+        assertThat(post.getPostImages()).hasSize(2);
+
+        verify(postRepository).findById(post.getId());
+        verify(authValidator).validate(user, user);
+        verify(postImageRepository).save(any(PostImage.class));
+    }
+
+    @Test
     @DisplayName("게시글 수정 - 실패(사용자 불일치)")
     void update_post_fail_different_user() {
         User owner = createUser(1L, "owner@test.com", "owner");
@@ -167,6 +222,51 @@ class PostServiceTest {
 
         verify(postRepository).findById(1L);
         verifyNoInteractions(authValidator, postImageRepository, s3Client);
+    }
+
+    @Test
+    @DisplayName("게시글 수정 - 실패(존재하지 않는 이미지)")
+    void update_post_fail_no_image() {
+        User user = createUser(1L, "test@test.com", "test");
+        Post post = createPost(1L, user, "old title", "old content");
+        PostUpdateDto dto = createPostUpdateDto("new", "new", List.of(1L), List.of());
+
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        doNothing().when(authValidator).validate(user, user);
+        when(postImageRepository.findById(anyLong()))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.update(dto, 1L, user))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(postRepository).findById(1L);
+        verify(postImageRepository).findById(anyLong());
+        verify(postImageRepository, never()).delete(any());
+        verify(s3Client, never()).deleteObject((DeleteObjectRequest) any());
+    }
+
+    @Test
+    @DisplayName("게시글 수정 - 실패(다른 게시물의 이미지 삭제)")
+    void update_post_fail_no_image_in_post() {
+        User user = createUser(1L, "test@test.com", "test");
+        Post post1 = createPost(1L, user, "old title", "old content");
+        Post post2 = createPost(2L, user, "old title", "old content"); // 요청 대상 게시글
+
+        PostUpdateDto dto = createPostUpdateDto("new", "new", List.of(1L), List.of());
+
+        PostImage image = createPostImage(1L, post1, "oldPostImageUrl"); // 다른 게시글의 이미지
+
+        when(postRepository.findById(post2.getId())).thenReturn(Optional.of(post2));
+        doNothing().when(authValidator).validate(user, user);
+        when(postImageRepository.findById(1L)).thenReturn(Optional.of(image));
+
+        assertThatThrownBy(() -> postService.update(dto, 2L, user))
+                .isInstanceOf(BadRequestException.class);
+
+        verify(postRepository).findById(2L);
+        verify(postImageRepository).findById(1L);
+        verify(postImageRepository, never()).delete(any());
+        verify(s3Client, never()).deleteObject((DeleteObjectRequest) any());
     }
 
     @Test
