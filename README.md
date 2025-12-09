@@ -275,7 +275,8 @@ JaCoCo를 적용하여 전체 코드 커버리지 및 라인 커버리지를 측
 - 에러 조기 발견 및 회귀 테스트 강화
 
 결과 이미지:
-<img width="1981" height="91" alt="스크린샷 2025-12-09 오후 1 55 42" src="https://github.com/user-attachments/assets/46a09b7d-fb2c-4781-ab3c-fc4b9e35a4ec" />
+<img width="1981" height="24" alt="스크린샷 2025-12-09 오후 1 36 21" src="https://github.com/user-attachments/assets/1259521d-0e4c-46f9-aa07-857034340606" />
+
 
 
 
