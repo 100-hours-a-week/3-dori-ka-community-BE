@@ -20,8 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,22 +30,19 @@ class PostViewServiceTest {
     private static final long INITIAL_VIEW_COUNT = 3L;
     private static final long USER_ID = 100L;
 
-    @Mock
-    private PostRepository postRepository;
-    @Mock
-    private PostJdbcRepository postJdbcRepository;
-    @Mock
-    private CacheManager cacheManager;
-    @Mock
-    private Cache cache;
+    @Mock private PostRepository postRepository;
+    @Mock private PostJdbcRepository postJdbcRepository;
+    @Mock private CacheManager cacheManager;
+    @Mock private Cache cache;
 
     @InjectMocks
     private PostViewServiceImpl postViewService;
 
-    @DisplayName("increaseViewcount increments based on cached value when present")
     @Test
-    void increaseViewcount_usesCachedValueWhenPresent() {
+    @DisplayName("조회수 증가 - 캐시에 값이 존재하는 경우")
+    void increaseViewcount_success_cache_present() {
         Post post = createPost(POST_ID, INITIAL_VIEW_COUNT);
+
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
         when(cacheManager.getCache("viewcount")).thenReturn(cache);
         when(cache.get(POST_ID, Long.class)).thenReturn(5L);
@@ -57,10 +53,11 @@ class PostViewServiceTest {
         verify(cache).put(POST_ID, 6L);
     }
 
-    @DisplayName("increaseViewcount uses post viewcount when cache entry is missing")
     @Test
-    void increaseViewcount_initializesFromPostWhenCacheEmpty() {
+    @DisplayName("조회수 증가 - 캐시에 값이 없는 경우(Post 값 사용)")
+    void increaseViewcount_success_cache_empty() {
         Post post = createPost(POST_ID, INITIAL_VIEW_COUNT);
+
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
         when(cacheManager.getCache("viewcount")).thenReturn(cache);
         when(cache.get(POST_ID, Long.class)).thenReturn(null);
@@ -71,10 +68,11 @@ class PostViewServiceTest {
         verify(cache).put(POST_ID, INITIAL_VIEW_COUNT + 1);
     }
 
-    @DisplayName("increaseViewcount still works when cache manager returns null")
     @Test
-    void increaseViewcount_handlesMissingCache() {
+    @DisplayName("조회수 증가 - 캐시 매니저 없음")
+    void increaseViewcount_success_no_cache_manager() {
         Post post = createPost(POST_ID, INITIAL_VIEW_COUNT);
+
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
         when(cacheManager.getCache("viewcount")).thenReturn(null);
 
@@ -84,18 +82,18 @@ class PostViewServiceTest {
         verifyNoInteractions(cache);
     }
 
-    @DisplayName("increaseViewcount throws when the post cannot be found")
     @Test
-    void increaseViewcount_throwsWhenPostMissing() {
+    @DisplayName("조회수 증가 - 게시글 없음")
+    void increaseViewcount_fail_post_not_found() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> postViewService.increaseViewcount(POST_ID))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
-    @DisplayName("getViewCount returns cached value without hitting the repository")
     @Test
-    void getViewCount_returnsCachedValue() {
+    @DisplayName("조회수 조회 - 캐시에 값이 있을 경우")
+    void get_viewcount_success_cache_present() {
         when(cacheManager.getCache("viewcount")).thenReturn(cache);
         when(cache.get(POST_ID, Long.class)).thenReturn(8L);
 
@@ -105,10 +103,11 @@ class PostViewServiceTest {
         verify(postRepository, never()).findById(anyLong());
     }
 
-    @DisplayName("getViewCount fetches from repository when cache misses")
     @Test
-    void getViewCount_fetchesFromRepositoryWhenNotCached() {
+    @DisplayName("조회수 조회 - 캐시에 값이 없을 경우")
+    void get_viewcount_success_cache_miss() {
         Post post = createPost(POST_ID, INITIAL_VIEW_COUNT);
+
         when(cacheManager.getCache("viewcount")).thenReturn(cache);
         when(cache.get(POST_ID, Long.class)).thenReturn(null);
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
@@ -118,10 +117,11 @@ class PostViewServiceTest {
         assertThat(result).isEqualTo(INITIAL_VIEW_COUNT);
     }
 
-    @DisplayName("getViewCount relies on repository when no cache is configured")
     @Test
-    void getViewCount_handlesMissingCache() {
+    @DisplayName("조회수 조회 - 캐시 미사용")
+    void get_viewcount_success_no_cache() {
         Post post = createPost(POST_ID, INITIAL_VIEW_COUNT);
+
         when(cacheManager.getCache("viewcount")).thenReturn(null);
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
 
@@ -130,9 +130,9 @@ class PostViewServiceTest {
         assertThat(result).isEqualTo(INITIAL_VIEW_COUNT);
     }
 
-    @DisplayName("getViewCount throws when neither cache nor repository can provide the post")
     @Test
-    void getViewCount_throwsWhenPostMissing() {
+    @DisplayName("조회수 조회 - 게시글 없음")
+    void get_viewcount_fail_not_found() {
         when(cacheManager.getCache("viewcount")).thenReturn(cache);
         when(cache.get(POST_ID, Long.class)).thenReturn(null);
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
@@ -141,9 +141,9 @@ class PostViewServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
-    @DisplayName("syncViewCount exits immediately when cache is missing")
     @Test
-    void syncViewCount_returnsWhenCacheMissing() {
+    @DisplayName("조회수 동기화 - 캐시 없음")
+    void sync_viewcount_success_no_cache() {
         when(cacheManager.getCache("viewcount")).thenReturn(null);
 
         postViewService.syncViewCount();
@@ -151,9 +151,9 @@ class PostViewServiceTest {
         verifyNoInteractions(postRepository);
     }
 
-    @DisplayName("syncViewCount writes cached viewcounts back into the posts")
     @Test
-    void syncViewCount_updatesPostsFromCache() {
+    @DisplayName("조회수 동기화 - 캐시 값 DB 반영")
+    void sync_viewcount_success_update_to_post() {
         Post post = createPost(POST_ID, INITIAL_VIEW_COUNT);
         ConcurrentHashMap<Long, Long> cacheStore = new ConcurrentHashMap<>();
         cacheStore.put(POST_ID, 20L);
@@ -168,9 +168,9 @@ class PostViewServiceTest {
         verify(postRepository).findById(POST_ID);
     }
 
-    @DisplayName("syncViewCountBulk exits when cache is missing")
     @Test
-    void syncViewCountBulk_returnsWhenCacheMissing() {
+    @DisplayName("조회수 벌크 동기화 - 캐시 없음")
+    void sync_viewcount_bulk_success_no_cache() {
         when(cacheManager.getCache("viewcount")).thenReturn(null);
 
         postViewService.syncViewCountBulk();
@@ -178,12 +178,13 @@ class PostViewServiceTest {
         verifyNoInteractions(postJdbcRepository);
     }
 
-    @DisplayName("syncViewCountBulk sends cached entries to JDBC repository and clears the cache")
     @Test
-    void syncViewCountBulk_updatesInBulkAndClearsCache() {
+    @DisplayName("조회수 벌크 동기화 - 정상 업데이트 후 캐시 비우기")
+    void sync_viewcount_bulk_success_clear_cache() {
         ConcurrentHashMap<Long, Long> cacheStore = new ConcurrentHashMap<>();
         cacheStore.put(POST_ID, 30L);
         cacheStore.put(2L, 40L);
+
         when(cacheManager.getCache("viewcount")).thenReturn(cache);
         when(cache.getNativeCache()).thenReturn(cacheStore);
 
@@ -191,18 +192,24 @@ class PostViewServiceTest {
 
         ArgumentCaptor<Map<Long, Long>> captor = ArgumentCaptor.forClass(Map.class);
         verify(postJdbcRepository).bulkUpdateViewcounts(captor.capture());
-        assertThat(captor.getValue()).containsEntry(POST_ID, 30L).containsEntry(2L, 40L);
+
+        assertThat(captor.getValue())
+                .containsEntry(POST_ID, 30L)
+                .containsEntry(2L, 40L);
+
         assertThat(cacheStore).isEmpty();
     }
 
-    @DisplayName("syncViewCountBulk keeps cache entries when bulk update fails")
     @Test
-    void syncViewCountBulk_logsErrorAndKeepsCacheOnFailure() {
+    @DisplayName("조회수 벌크 동기화 - 실패 시 캐시 유지")
+    void sync_viewcount_bulk_fail_keep_cache() {
         ConcurrentHashMap<Long, Long> cacheStore = new ConcurrentHashMap<>();
         cacheStore.put(POST_ID, 50L);
+
         when(cacheManager.getCache("viewcount")).thenReturn(cache);
         when(cache.getNativeCache()).thenReturn(cacheStore);
-        doThrow(new RuntimeException("fail")).when(postJdbcRepository).bulkUpdateViewcounts(anyMap());
+        doThrow(new RuntimeException("fail"))
+                .when(postJdbcRepository).bulkUpdateViewcounts(anyMap());
 
         postViewService.syncViewCountBulk();
 

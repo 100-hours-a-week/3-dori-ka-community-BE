@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.example.community.dto.response.s3.PresignedUrlResponse;
 import java.net.URL;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -37,6 +38,7 @@ class PreSignedUrlServiceTest {
     }
 
     @Test
+    @DisplayName("presigned-url 발급 - 성공")
     void create_presignedUrl() throws Exception {
         PresignedPutObjectRequest presignedPutObjectRequest = mock(PresignedPutObjectRequest.class);
         when(presignedPutObjectRequest.url()).thenReturn(new URL("https://signed-url"));
