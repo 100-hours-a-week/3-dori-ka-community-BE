@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
                 () -> new ResourceNotFoundException(RESOURCE_NOT_FOUND)
         );
 
-        if (!dto.getNickname().equals(findUser.getNickname()) &&userRepository.existsByNickname(dto.getNickname())) {
+        if (!dto.getNickname().equals(findUser.getNickname()) && userRepository.existsByNickname(dto.getNickname())) {
             throw new DuplicatedException(NICKNAME_DUPLICATED);
         }
 
@@ -110,6 +110,7 @@ public class UserServiceImpl implements UserService {
         RefreshToken refreshToken = refreshTokenRepository.findByUser(user).orElseThrow(
                 () -> new BadRequestException(TOKEN_EXPIRE)
         );
+
         refreshTokenRepository.delete(refreshToken);
 
         if (StringUtils.hasText(user.getProfileImage())) {
