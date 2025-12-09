@@ -265,7 +265,7 @@ JaCoCo를 적용하여 전체 코드 커버리지 및 라인 커버리지를 측
 
 커버리지 확보 범위:
 
-- Service 및 Controller Layer 중심으로 **80% 이상 달성**
+- Service 및 Controller Layer 중심으로 **85% 이상 달성**
 - 예외 처리, 인증/인가, 게시글·댓글 CRUD 주요 로직 포함
 
 커버리지 도입 효과:
@@ -275,7 +275,7 @@ JaCoCo를 적용하여 전체 코드 커버리지 및 라인 커버리지를 측
 - 에러 조기 발견 및 회귀 테스트 강화
 
 결과 이미지:
-<img width="1981" height="24" alt="스크린샷 2025-12-09 오후 1 36 21" src="https://github.com/user-attachments/assets/5984b471-83d2-4806-8b13-81769ac51f5d" />
+<img width="1981" height="24" alt="스크린샷 2025-12-09 오후 1 36 21" src="https://github.com/user-attachments/assets/241d53bc-33dd-442c-80e2-1b11f508027c" />
 
 
 
